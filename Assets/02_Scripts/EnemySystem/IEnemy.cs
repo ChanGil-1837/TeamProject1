@@ -22,4 +22,8 @@ public interface IEnemy
     void RendomPos();
 
     // 적 상태
+    public bool IsDead
+    {
+        get;
+    }
 }

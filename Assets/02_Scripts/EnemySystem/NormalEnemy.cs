@@ -12,6 +12,12 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     private float currentHP; // 현재 체력
     // private Reward reward; // 보상???
 
+    public bool IsDead
+    {
+        get;
+        set;
+    }
+
     private void Start()
     {
         Init();
@@ -34,7 +40,7 @@ public class NormalEnemy : MonoBehaviour, IEnemy
         // 중앙으로 설정 속도 만큼 이동
         transform.position = Vector3.MoveTowards(
             transform.position,
-            Vector3.zero,
+            GameObject.Find("Player").transform.position,
             _moveSpeed * Time.deltaTime
             );
     }
@@ -42,23 +48,30 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     // 플레이어 공격, 플레이어에게 접촉 시 데미지를 입히고 파괴
     public void AttackToPlayer()
     {
-
+        OnTriggerEnter(GameObject.Find("Player").GetComponent<Collider>());
+        
     }
 
     public void OnTriggerEnter(Collider other)
     {
-
+        if (other.tag == "Player")
+        {
+            Debug.Log($"{gameObject.name}접촉!");
+            Die();
+        }
+        
     }
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
     public void Die()
     {
-        if (currentHP <= 0)
-        {
-            gameObject.SetActive(false);
-        }
+        gameObject.SetActive(false);
+        IsDead = true;
+        Debug.Log("Enemy 비활성화");
     }
 
+
+    // 생성 적 위치
     public void RendomPos()
     {
 
