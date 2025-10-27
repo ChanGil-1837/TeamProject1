@@ -1,22 +1,35 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TeamProject.GameSystem;
 using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
+
 
 public class Player : MonoBehaviour
 {
     [Header("Base Stats")]
     [SerializeField] private float _baseHp = 100;//체력
     [SerializeField] private float _baseMaxHp = 100;//최대체력
-    [SerializeField] private float _detectRange = 5;//적 탐색 범위
     [SerializeField] private float _baseHpRegen = 0.1f; //기본체력리젠
     [SerializeField] private float _baseDef = 0f; //방어력
-    [SerializeField] private int _gold;
-    [SerializeField] private float _baseGoldMultiplier = 0.1f; //골드획득비율
-    //베이스능력치를 어떻게 할것인가...?
+    [SerializeField] private int _gold;//보유 골드
+    [SerializeField] private float _baseGoldMultiplier = 0f; //골드획득비율
+
+
+
+    [SerializeField] private float _detectRange = 5;//적 탐색 범위
     [SerializeField] private Weapon _weapon;//무기 넣을것
-    private float _currentHp;//
+    private float _currentHp;//변동된 현재 체력
+    private bool _isDead = false;//사망여부
+    private readonly Dictionary<UpgradeType, float> _upgradeValue = new()//딕셔너리로 상승폭 관리
+    {
+        {UpgradeType.MaxHp, 10f },
+        {UpgradeType.HpRegen, 0.1f },
+        {UpgradeType.DetectRange, 0.5f },
+        {UpgradeType.Defense, 0.5f },
+        {UpgradeType.GoldMultiplier, 0.05f }
+    };
     //읽기전용 프로퍼티 아직은 어떻게 돌아갈지 몰라서 대충 지정해둠
     public float Hp => _baseHp;
     public float MaxHp => _baseMaxHp;
@@ -28,7 +41,18 @@ public class Player : MonoBehaviour
 
     public event Action OnStatsChanged;
     public event Action<int> OnGoldChanged;
-
+    private void Start()
+    {
+        _currentHp = _baseMaxHp;
+        _isDead = false;
+    }
+    private void Update()
+    {
+        if (GameManager.Instance.IsPlaying() == false)
+        {
+            return;
+        }
+    }
     public void AddGold(int amount)
     {
         int finalGold = Mathf.RoundToInt(amount * (1 + _baseGoldMultiplier));
@@ -37,7 +61,7 @@ public class Player : MonoBehaviour
     }
     public bool SpendGold(int cost)
     {
-        if (_gold < cost)
+        if (_gold < cost)//금액 부족시 false
         {
             return false;
         }
@@ -62,6 +86,7 @@ public class Player : MonoBehaviour
         if (_currentHp <= 0)
         {
             Die();
+            GameManager.Instance.GameOver();
         }
     }
 
@@ -72,33 +97,37 @@ public class Player : MonoBehaviour
 
     private void UpgradeStats(UpgradeType type, int cost, float value)
     {
-        if (!SpendGold(cost))
+        if (SpendGold(cost) == false)
         {
             return;
         }
-        switch(type)
+        if (_upgradeValue.ContainsKey(type) == false)
+        {
+            return;
+        }
+        switch (type)
         {
             case UpgradeType.MaxHp:
-                _baseMaxHp += value;
+                MaxHpUp(value);
                 break;
             case UpgradeType.Defense:
-                _baseDef += value;
+                DefUp(value);
                 break;
             case UpgradeType.HpRegen:
-                _baseHpRegen += value;
+                HpRegenUp(value);
                 break;
             case UpgradeType.DetectRange:
-                _detectRange += value;
+                DetectRangeUp(value);
                 break;
             case UpgradeType.GoldMultiplier:
-                _baseGoldMultiplier += value;
+                GoldMultiplierUp(value);
                 break;
-            
 
-            
+
+
         }
         OnStatsChanged?.Invoke();
-​    }
+    }
     public bool TryUpgradeWeapon(Weapon weapon, int cost)//무기 업그레이드가 가능한가
     {
         if (_gold < cost)
@@ -116,31 +145,53 @@ public class Player : MonoBehaviour
         float ClosestDistance = float.MaxValue;
         foreach (IEnemy enemy in enemies)
         {
-            if (enemy == null)
+            if (enemy == null || enemy.IsDead)
             {
-
+                continue;
             }
-            float distance = Vector3.Distance(transform.position, enemy.position);
-
+            float distance = Vector3.Distance(transform.position, enemy.Transform.position);
+            if (distance < _detectRange && distance < ClosestDistance)
+            {
+                ClosestEnemy = enemy;
+                ClosestDistance = distance;
+            }
         }
         return ClosestEnemy;
     }
     private void Die()
     {
+        _isDead = true;
         gameObject.SetActive(false);
     }
 
-    private void RegenHp()
+    private void HpRegenUp(float value)
     {
-
+        _baseHpRegen += value;
     }
+    private void MaxHpUp(float value)
+    {
+        _baseMaxHp += value;
+    }
+    private void DefUp(float value)
+    {
+        _baseDef += value;
+    }
+    private void DetectRangeUp(float value)
+    {
+        _detectRange += value;
+    }
+    private void GoldMultiplierUp(float value)
+    {
+        _baseGoldMultiplier += value;
+    }
+
     public enum UpgradeType
     {
         MaxHp,
         Defense,
         HpRegen,
         DetectRange,
-        GoldMultiplier,
-        TryUpgradeWeapon
+        GoldMultiplier
+
     }
 }
