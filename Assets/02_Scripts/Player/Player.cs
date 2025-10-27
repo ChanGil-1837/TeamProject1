@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using TeamProject.GameSystem;
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
+
 
 
 public class Player : MonoBehaviour
@@ -139,19 +138,19 @@ public class Player : MonoBehaviour
     {
         switch (type)
         {
-            case UpgradeType.MaxHp: 
+            case UpgradeType.MaxHp:
                 return 100;
-            case UpgradeType.Defense: 
+            case UpgradeType.Defense:
                 return 150;
-            case UpgradeType.HpRegen: 
+            case UpgradeType.HpRegen:
                 return 120;
-            case UpgradeType.DetectRange: 
+            case UpgradeType.DetectRange:
                 return 200;
-            case UpgradeType.GoldMultiplier: 
+            case UpgradeType.GoldMultiplier:
                 return 300;
-            case UpgradeType.Weapon: 
+            case UpgradeType.Weapon:
                 return 500;
-            default: 
+            default:
                 return 0;
         }
     }
