@@ -10,60 +10,127 @@ enum WeaponType
     Bounce,
 }
 
-public class Weapon : MonoBehaviour
+public abstract class Weapon : MonoBehaviour
 {
-    //[Header("")]
-    //[SerializeField]
+    [Header("공격력")]
+    [SerializeField] private float damage;
 
-    private WeaponType type;
+    [Header("공격 주기")]
+    [SerializeField] private float baseInterval;
 
-    private float damage;
+    [Header("레벨")]
+    [SerializeField] private int level;
 
-    private float baseInterval;
-    private float currentInterval;
+    [Header("투사체")]
+    [SerializeField] private Projectile projectilePrefab;
+    [SerializeField] protected int projectileCount;
 
-    private int level;
+    [Header("풀")]
+    [SerializeField] private int poolSize;
 
-    private Projectile projectilePrefab;
-    private int projectileCount;
+    public float Damage => damage;
 
-    private int poolSize;
     private Queue<Projectile> projectilePool = new();
+    private Coroutine attackCoroutine;
+    private WaitForSeconds attackInterval;
+    private WaitUntil fireState;
 
+    // 테스트용
+    [SerializeField] protected Transform target;
+    private bool canFire;
 
-    void InitializePool()
+    private void Awake()
     {
-        // 투사체 풀 초기화
+        Init();
     }
 
+    private void Init()
+    {
+        fireState = new WaitUntil(() => canFire);
+        attackInterval = new WaitForSeconds(baseInterval);
+
+        attackCoroutine = StartCoroutine(Attack());
+
+        for (int i = 0; i < poolSize; i++)
+        {
+            Projectile projectile = NewProjectile();
+        }
+    }
+
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            canFire = !canFire;
+        }
+    }
+
+    //---------------------------------------------------
+
+    #region 풀링
+    // 새로운 투사체 생성
     private Projectile NewProjectile()
     {
-        // 새로운 투사체 생성
-        return null;
+        Projectile newProjectile = Instantiate(projectilePrefab, transform);
+        newProjectile.Init(this);
+        newProjectile.gameObject.SetActive(false);
+        projectilePool.Enqueue(newProjectile);
+
+        return newProjectile;
     }
-    private Projectile GetBulletFromPool()
+
+    // 풀에서 투사체 사용
+    protected Projectile GetFromPool()
     {
-        // 풀에서 투사체 꺼냄
-        return null;
+        Projectile projectile;
+
+        // 남는 투사체 없음
+        if (projectilePool.Count <= 0)
+        {
+            projectile = NewProjectile();
+        }
+
+        // 풀 투사체 사용
+        projectile = projectilePool.Dequeue();
+
+        // 활성화
+        projectile.gameObject.SetActive(true);
+
+        return projectile;
     }
+    // 투사체 풀 반환
     public void ReturnToPool(Projectile projectile)
     {
-        // 투사체 풀 반환
+        projectilePool.Enqueue(projectile);
+        projectile.gameObject.SetActive(false);
+
     }
+    #endregion
 
+    //---------------------------------------------------
 
-    public void Attack(Vector2 dir)
+    #region 공격
+
+    // 발사
+    public abstract void Fire();
+
+    // 공격 코루틴
+    IEnumerator Attack()
     {
-        // 투사체 발사
-    }
+        while (true)
+        {
+            yield return fireState;
 
-    public void TickTime(float deltaTime)
-    {
-        // 공격 주기 갱신
-    }
+            Fire();
 
-    public void UpgradeWeapon()
-    {
-        // 업그레이드 수치 적용
+            yield return attackInterval;
+        }
     }
+    #endregion
+
+    //---------------------------------------------------
+
+    // 업그레이드
+    public void UpgradeWeapon() { }
 }

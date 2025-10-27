@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4535741687177326043
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7085525102511736907}
+  - component: {fileID: -1643510044999408767}
+  m_Layer: 0
+  m_Name: EnemySpwaner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7085525102511736907
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4535741687177326043}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-1643510044999408767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4535741687177326043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd378b0014333344ba72179ef3a9773d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _enemyPrefabs:
+  - {fileID: 4110132653066226085, guid: 5e9f62cd29afd804eb1cb93ffa327313, type: 3}
+  - {fileID: 6849024127437812036, guid: 7db7d5df5ff9a5a4088a72827d2a0897, type: 3}
+  - {fileID: 8036727523999895194, guid: 0f85d8e33c77af049909453b941f86f1, type: 3}
+  - {fileID: 2866081480140857432, guid: fc0bfefa9183a6f47bd03f032d0e56a1, type: 3}
+  _normalEnemyNumber: 2
+  _tankEnemyNumber: 2
+  _speedEnemyNumber: 2
+  _bossEnemyNumber: 1
+  _attackRange: 5
