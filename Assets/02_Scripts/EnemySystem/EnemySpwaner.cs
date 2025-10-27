@@ -68,7 +68,7 @@ public class EnemySpwaner : MonoBehaviour
                     Vector3 direction = GameObject.Find("Player").transform.position + (Random.insideUnitSphere * _attackRange);
                     direction.y = 0;
 
-                    if (direction.magnitude >= _attackRange-1)
+                    if (direction.magnitude >= _attackRange - 1)
                     {
                         activeEnemies[enemyTurn].gameOJ.transform.position = direction;
                         activeEnemies[enemyTurn].gameOJ.SetActive(true);

@@ -42,12 +42,12 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     // 플레이어 공격, 플레이어에게 접촉 시 데미지를 입히고 파괴
     public void AttackToPlayer()
     {
-        
+
     }
 
     public void OnTriggerEnter(Collider other)
     {
-        
+
     }
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
