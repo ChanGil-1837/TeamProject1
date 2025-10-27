@@ -25,7 +25,10 @@ public class Projectile : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            //if(other.TryGetComponent<Enemy>(out Enemy enemy)) { }
+            if(other.TryGetComponent<IEnemy>(out IEnemy enemy))
+            {
+                //enemy.TakeDamage(weapon.Damage);
+            }
             DisableProjectile();
         }
     }
@@ -36,7 +39,6 @@ public class Projectile : MonoBehaviour
     {
         if (dir.magnitude > 0)
         {
-            transform.rotation = Quaternion.LookRotation(dir);
             rigid.velocity = dir * speed;
         }
     }
