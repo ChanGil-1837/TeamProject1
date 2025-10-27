@@ -50,9 +50,9 @@ public class Player : MonoBehaviour
 
     }
 
-    private void Attack(List<Enemy> enemies)//가까운적 찾아서 공격
+    private void Attack(List<IEnemy> enemies)//가까운적 찾아서 공격
     {
-        Enemy target = FindClosestEnemy(enemies);
+        IEnemy target = FindClosestEnemy(enemies);
         //~~~무기의 공격을 호출
     }
 
@@ -93,7 +93,7 @@ public class Player : MonoBehaviour
             case UpgradeType.GoldMultiplier:
                 _baseGoldMultiplier += value;
                 break;
-            case 
+            
 
             
         }
@@ -110,10 +110,20 @@ public class Player : MonoBehaviour
         return true;
     }
 
-    private Enemy FindClosestEnemy(List<Enemy> enemies)//가까운 적 찾기
+    private IEnemy FindClosestEnemy(List<IEnemy> enemies)//가까운 적 찾기
     {
-        
-        return;
+        IEnemy ClosestEnemy = null;
+        float ClosestDistance = float.MaxValue;
+        foreach (IEnemy enemy in enemies)
+        {
+            if (enemy == null)
+            {
+
+            }
+            float distance = Vector3.Distance(transform.position, enemy.position);
+
+        }
+        return ClosestEnemy;
     }
     private void Die()
     {
