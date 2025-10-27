@@ -45,11 +45,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _enemyPrefabs:
-  - {fileID: 1111654655543552067, guid: afa06586e5ebe33488230d5d1996f160, type: 3}
-  - {fileID: 9053619146297434533, guid: 20c8aee8c99a7be4fb788cc3db052062, type: 3}
-  - {fileID: 4201068624716903046, guid: 7ac3aa3eb28558f4cae6bd0603272a50, type: 3}
-  - {fileID: 4218132668929826842, guid: 62ac15f3486fcdf4280e42f96a53332a, type: 3}
+  - {fileID: 4110132653066226085, guid: 5e9f62cd29afd804eb1cb93ffa327313, type: 3}
+  - {fileID: 6849024127437812036, guid: 7db7d5df5ff9a5a4088a72827d2a0897, type: 3}
+  - {fileID: 8036727523999895194, guid: 0f85d8e33c77af049909453b941f86f1, type: 3}
+  - {fileID: 2866081480140857432, guid: fc0bfefa9183a6f47bd03f032d0e56a1, type: 3}
   _normalEnemyNumber: 2
   _tankEnemyNumber: 2
   _speedEnemyNumber: 2
   _bossEnemyNumber: 1
+  _attackRange: 5
