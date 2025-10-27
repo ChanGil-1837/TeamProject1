@@ -83,6 +83,7 @@ public class Player : MonoBehaviour
     public void TakeDamage(float damage)
     {
         _currentHp -= damage;
+        OnStatsChanged?.Invoke();
         if (_currentHp <= 0)
         {
             Die();
@@ -95,16 +96,19 @@ public class Player : MonoBehaviour
 
     }
 
-    private void UpgradeStats(UpgradeType type, int cost, float value)
+    private void UpgradeStats(UpgradeType type)
     {
-        if (SpendGold(cost) == false)
+        int cost = GetUpgradeCost(type);
+
+        if (SpendGold(cost) == false)//골드가 부족하면
         {
             return;
         }
-        if (_upgradeValue.ContainsKey(type) == false)
+        if (_upgradeValue.ContainsKey(type) == false)//딕셔너리에 타입이 없다면
         {
             return;
         }
+        float value = _upgradeValue[type]; //딕셔너리에 저장된 상승폭
         switch (type)
         {
             case UpgradeType.MaxHp:
@@ -122,23 +126,35 @@ public class Player : MonoBehaviour
             case UpgradeType.GoldMultiplier:
                 GoldMultiplierUp(value);
                 break;
-
-
-
+            case UpgradeType.Weapon:
+                if (_weapon != null)
+                {
+                    _weapon.UpgradeWeapon();//무기 업그레이드 호출
+                }
+                break;
         }
         OnStatsChanged?.Invoke();
     }
-    public bool TryUpgradeWeapon(Weapon weapon, int cost)//무기 업그레이드가 가능한가
+    private int GetUpgradeCost(UpgradeType type)//업그레이드 비용 관련
     {
-        if (_gold < cost)
+        switch (type)
         {
-            return false;
+            case UpgradeType.MaxHp: 
+                return 100;
+            case UpgradeType.Defense: 
+                return 150;
+            case UpgradeType.HpRegen: 
+                return 120;
+            case UpgradeType.DetectRange: 
+                return 200;
+            case UpgradeType.GoldMultiplier: 
+                return 300;
+            case UpgradeType.Weapon: 
+                return 500;
+            default: 
+                return 0;
         }
-        _gold -= cost;
-        weapon.UpgradeWeapon();
-        return true;
     }
-
     private IEnemy FindClosestEnemy(List<IEnemy> enemies)//가까운 적 찾기
     {
         IEnemy ClosestEnemy = null;
@@ -191,7 +207,8 @@ public class Player : MonoBehaviour
         Defense,
         HpRegen,
         DetectRange,
-        GoldMultiplier
+        GoldMultiplier,
+        Weapon
 
     }
 }
