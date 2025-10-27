@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class NormalEnemy : MonoBehaviour, IEnemy
@@ -31,7 +32,7 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     public void MoveToPlayer()
     {
         // 중앙으로 설정 속도 만큼 이동
-        Vector3.MoveTowards(
+        transform.position = Vector3.MoveTowards(
             transform.position,
             Vector3.zero,
             _moveSpeed * Time.deltaTime
@@ -41,7 +42,12 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     // 플레이어 공격, 플레이어에게 접촉 시 데미지를 입히고 파괴
     public void AttackToPlayer()
     {
-        // 콜라이더 활용해서 접촉하면 플레이어에게 피해를 입힘.
+        
+    }
+
+    public void OnTriggerEnter(Collider other)
+    {
+        
     }
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
@@ -51,5 +57,10 @@ public class NormalEnemy : MonoBehaviour, IEnemy
         {
             gameObject.SetActive(false);
         }
+    }
+
+    public void RendomPos()
+    {
+
     }
 }
