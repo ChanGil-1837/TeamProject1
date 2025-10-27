@@ -17,4 +17,9 @@ public interface IEnemy
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
     void Die();
+
+    // 적 위치 
+    void RendomPos();
+
+    // 적 상태
 }
