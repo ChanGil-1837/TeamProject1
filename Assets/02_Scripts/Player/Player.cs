@@ -11,7 +11,6 @@ public enum UpgradeType
     HpRegen,
     DetectRange,
     GoldMultiplier,
-    Weapon
 }
 
 public class Player : MonoBehaviour
@@ -31,7 +30,7 @@ public class Player : MonoBehaviour
     private bool _isDead = false;//사망여부
 
     [Header("Weapon")]
-    [SerializeField] private List<Weapon> _weapon = new List<Weapon>();//무기 넣을것들(추가식으로 하니까 리스트로 작성)
+    [SerializeField] private List<Weapon> _weapons = new List<Weapon>();//무기 넣을것들(추가식으로 하니까 리스트로 작성)
 
     //딕셔너리로 비용, 능력치 상승 관리
     [Header("Upgrade Data")]
@@ -98,10 +97,10 @@ public class Player : MonoBehaviour
         _gold += finalGold;
         OnGoldChanged?.Invoke(_gold);
     }
-    
+
     public void Attack(List<IEnemy> enemies)//가까운적 찾아서 공격
     {
-        if (_weapon == null)
+        if (_weapons == null)
         {
             return;
         }
@@ -153,12 +152,7 @@ public class Player : MonoBehaviour
             case UpgradeType.GoldMultiplier:
                 GoldMultiplierUp(value);
                 break;
-            case UpgradeType.Weapon:
-                if (_weapon != null)
-                {
-                    //_weapon.UpgradeWeapon();//무기 업그레이드 호출
-                }
-                break;
+
         }
         int newCost = Mathf.RoundToInt(cost * CostMultiplier); //상승된 비용 적용
         _upgradeValue[type] = (newCost, value); //딕셔너리에 반영
@@ -168,7 +162,7 @@ public class Player : MonoBehaviour
     {
         Init();//현재 동작은 Init과 같음
     }
-    private bool SpendGold(int cost)
+    public bool SpendGold(int cost)
     {
         if (_gold < cost)//금액 부족시 false
         {
