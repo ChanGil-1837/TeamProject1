@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class MultiWeapon : Weapon
+public sealed class MultiWeapon : Weapon
 {
+    [Header("발사 수")]
+    [SerializeField] private int shotCount;
     [Header("각도")]
     [SerializeField] private float totalAngle = 45f;
 
@@ -16,9 +18,9 @@ public class MultiWeapon : Weapon
         float angleStep = 0f;
         
         // 간격 : 투사체 개수 - 1 (간격의 수)
-        angleStep = totalAngle / (projectileCount - 1);
+        angleStep = totalAngle / (shotCount - 1);
         
-        for (int i = 0; i < projectileCount; i++)
+        for (int i = 0; i < shotCount; i++)
         {
             // 현재 투사체의 최종 각도 계산
             float finalAngle = startAngle + (angleStep * i);
@@ -27,9 +29,14 @@ public class MultiWeapon : Weapon
             Vector3 direction = rotation * baseDirection;
 
             Projectile projectile = GetFromPool();
-            projectile.transform.position = transform.position;
-            projectile.transform.rotation = Quaternion.LookRotation(direction);
-            projectile.SetDirection(direction);
+
+            SetProjectileTransform(projectile, direction);
         }
+    }
+
+
+    public void UpgradeShotCount(int shotIncrease)
+    {
+        shotCount += shotIncrease;
     }
 }
