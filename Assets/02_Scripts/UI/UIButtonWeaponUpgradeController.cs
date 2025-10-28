@@ -82,7 +82,7 @@ public class UIButtonWeaponUpgradeController : MonoBehaviour
 
         if(costLabel)
         {
-            costLabel.text = $"{buttonLogic.upgradeCost}G";
+            costLabel.text = $"{buttonLogic.upgradeCost}";
         }
     }
 }
