@@ -26,7 +26,7 @@ public class Player : MonoBehaviour
     [SerializeField] private int _gold;//보유 골드
 
     [Header("Runtime State")]
-    private float _currentHp;//변동된 체력
+    private float _currentHp;//변동된 체력(현재 체력임 변동 되기에 따로 이름하고 바꾼것)
     private bool _isDead = false;//사망여부
 
     [Header("Weapon")]
@@ -67,7 +67,7 @@ public class Player : MonoBehaviour
     }
     private void Update()
     {
-        if (_isDead == true || GameManager.Instance.IsPlaying() == false)//정지 혹은 사망이라면
+        if (_isDead == true) //|| GameManager.Instance.IsPlaying() == false)//정지 혹은 사망이라면
         {
             return;
         }
@@ -129,7 +129,7 @@ public class Player : MonoBehaviour
         if (_currentHp <= 0)
         {
             Die();
-            GameManager.Instance.GameOver();
+            //GameManager.Instance.GameOver();
         }
     }
     public void UpgradeStats(UpgradeType type)
@@ -178,7 +178,7 @@ public class Player : MonoBehaviour
     }
     private void AddWeapon(Weapon weapon)
     {
-        //무기 장착 해야됨...................................................
+        //무기 추가,장착
     }
 
     private void TickTime(float deltaTime)
@@ -186,25 +186,25 @@ public class Player : MonoBehaviour
         _currentHp = Mathf.Min(_currentHp + _baseHpRegen * deltaTime, _baseMaxHp);
         OnStatsChanged?.Invoke();
     }
-  
+
     private IEnemy FindClosestEnemy(List<IEnemy> enemies)//가까운 적 찾기
     {
         IEnemy closestEnemy = null;
-        float closestDistance = float.MaxValue;
-        foreach (IEnemy enemy in enemies)
-        {
-            if (enemy == null || enemy.IsDead)
-            {
-                continue;
-            }
-            float distance = Vector3.Distance(transform.position, enemy.Transform.position);
-            if (distance < _detectRange && distance < closestDistance)
-            {
-                closestEnemy = enemy;
-                closestDistance = distance;
-            }
-        }
-        return closestEnemy;
+        //float closestDistance = float.MaxValue; //거리 비교용(최대값)
+        //foreach (IEnemy enemy in enemies) //전달받은 적 순회
+        //{
+        //    if (enemy == null)// || enemy.IsDead) //null 이거나 죽은 적 무시
+        //    {
+        //        continue;
+        //    }
+        //    float enemyDistance = (transform.position - enemy.Transform.position).sqrMagnitude;//적 거리 계산
+        //    if (enemyDistance < (_detectRange * _detectRange) && enemyDistance < closestDistance)//적 거리가 탐지범위 그리고 가장 가까운 적 범위보다 작다면
+        //    {
+        //        closestEnemy = enemy; //가장 가까운 적 갱신
+        //        closestDistance = enemyDistance; //가장 가까운 적 거리 갱신
+        //    }
+        //}
+        return closestEnemy; //가장 가까운 적 리턴
     }
     private void Die()
     {
@@ -217,7 +217,7 @@ public class Player : MonoBehaviour
         _baseHpRegen += value;
     }
     private void MaxHpUp(float value)
-    { 
+    {
         _baseMaxHp += value; //최대 체력 상승
         _currentHp = Mathf.Min(_currentHp, _baseMaxHp);//현재 체력은 변동 없도록
     }
@@ -233,6 +233,5 @@ public class Player : MonoBehaviour
     {
         _baseGoldMultiplier += value;
     }
- 
-    
+
 }
