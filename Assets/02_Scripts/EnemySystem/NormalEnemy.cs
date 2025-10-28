@@ -5,13 +5,25 @@ using UnityEngine;
 
 public class NormalEnemy : MonoBehaviour, IEnemy
 {
-    private float maxHP = 10; // 최대
-    private float currentHP; // 현재
-    private float moveSpeed = 1; // 이동 속도
-    private float damage = 10; // 공격력
+    [Header("기본 최대 체력")]
+    [SerializeField] private float maxHP = 10; // 최대
 
+    [Header("기본 현재 체력")]
+    [SerializeField] private float currentHP; // 현재
+
+    [Header("기본 이동속도")]
+    [SerializeField] private float moveSpeed = 1; // 이동 속도
+
+    [Header("기본 공격력")]
+    [SerializeField] private float damage = 10; // 공격력
+
+    [Header("체력 증가량(test용))")]
     [SerializeField] private float _plusHP; // 최대 체력 
-    [SerializeField] private float _plusMoveSpeed; // 이동 속도
+
+    [Header("이동속도 증가량(test용)")]
+    [SerializeField] private float _plusMoveSpeed; // 이동속도
+
+    [Header("공격력 증가량(test용)")]
     [SerializeField] private float _plusDamage; // 공격력
 
     private float reward; // 보상
@@ -34,7 +46,7 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     {
         // 웨이브에 따라 증가되는 수치만큼 반영
         maxHP = maxHP + _plusHP;
-        moveSpeed = moveSpeed+ _plusMoveSpeed;
+        moveSpeed = moveSpeed + _plusMoveSpeed;
         damage = damage + _plusDamage;
 
         currentHP = maxHP;
@@ -63,37 +75,32 @@ public class NormalEnemy : MonoBehaviour, IEnemy
         {
             Debug.Log($"{gameObject.name} 접촉!");
             //GameObject.Find("Player").GetComponent<Player>().Gold += _reward;
-            Die();
+            EnemyDie();
         }
 
         else if (other.tag == "Projectile")
         {
             Debug.Log($"{gameObject.name} 접촉!");
-            // 공격력만큼 차감
-            currentHP -= 0;
 
             // 현재 체력이 0이면 사망처리
             if (currentHP <= 0)
             {
-                Die();
-                //플레이어 보상지급메서드 호출
-                //GameObject.Find("Player").GetComponent<Player>().Reward();
+                EnemyDie();
             }
         }
     }
 
+    // 적 체력 감소
+    public void TakeDamage(int damage)
+    {
+        currentHP -= damage;
+    }
+
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
-    public void Die()
+    public void EnemyDie()
     {
         gameObject.SetActive(false);
         IsDead = true;
         Debug.Log("Enemy 비활성화");
-    }
-
-
-    // 생성 적 위치
-    public void RendomPos()
-    {
-
     }
 }
