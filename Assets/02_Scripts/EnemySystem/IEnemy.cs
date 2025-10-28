@@ -16,10 +16,10 @@ public interface IEnemy
     //void AttackToPlayer();
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
-    void Die();
+    void EnemyDie();
 
-    // 적 위치 
-    void RendomPos();
+    // 피격 시
+    void TakeDamage(int damage);
 
     // 적 상태
     public bool IsDead
