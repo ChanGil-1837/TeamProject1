@@ -1,65 +1,69 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum UpgradeType
+namespace UI
 {
-    Damage,
-    FireRate,
-    ShotCount
-}
-
-public class UIButtonWeaponUpgrade : MonoBehaviour
-{
-    public UpgradeType upgradeType;
-    public WeaponType weaponType;
-    public ulong upgradeCost;
-    public float upgradeAmount = 1f;
-    public float fireRateMultiplier = 0.9f;
-    public int shotIncrease = 1;
-
-    [SerializeField] private Button button;
-    [SerializeField] private Weapon targetWeapon; // 인스펙터에 드래그하거나, 런타임에 할당
-
-    private void Awake()
+    public enum UpgradeType
     {
-        if (button == null)
-            button = GetComponent<Button>();
+        Damage,
+        FireRate,
+        ShotCount
     }
 
-    private void Start()
+    public class UIButtonWeaponUpgrade : MonoBehaviour
     {
-        button.onClick.AddListener(ApplyUpgrade);
-    }
+        public UpgradeType upgradeType;
+        public WeaponType weaponType;
+        public ulong upgradeCost;
+        public int upgradeAmount = 1;
+        public float fireRateMultiplier = 0.9f;
+        public int shotIncrease = 1;
 
-    private void ApplyUpgrade()
-    {
-        if (targetWeapon == null)
+        [SerializeField] private Button button;
+        [SerializeField] private Weapon targetWeapon; // 인스펙터에 드래그하거나, 런타임에 할당
+
+        private void Awake()
         {
-            Debug.LogWarning("WeaponUpgradeButton: targetWeapon이 할당되지 않음!");
-            return;
+            if (button == null)
+                button = GetComponent<Button>();
         }
 
-        switch (upgradeType)
+        private void Start()
         {
-            case UpgradeType.Damage:
-                // targetWeapon.UpgradeDamage(upgradeAmount);
-                break;
+            button.onClick.AddListener(ApplyUpgrade);
+        }
 
-            case UpgradeType.FireRate:
-                // targetWeapon.UpgradeFireRate(fireRateMultiplier);
-                break;
+        private void ApplyUpgrade()
+        {
+            if (targetWeapon == null)
+            {
+                Debug.LogWarning("WeaponUpgradeButton: targetWeapon이 할당되지 않음!");
+                return;
+            }
 
-            case UpgradeType.ShotCount:
-                // if (targetWeapon is MultiShotWeapon multi)
-                //{
-                //     multi.UpgradeShotCount(shotIncrease);
-                //}
-                break;
+            switch (upgradeType)
+            {
+                case UpgradeType.Damage:
+                    targetWeapon.UpgradeDamage(upgradeAmount);
+                    break;
+
+                case UpgradeType.FireRate:
+                    targetWeapon.UpgradeFireRate(fireRateMultiplier);
+                    break;
+
+                case UpgradeType.ShotCount:
+                    if (targetWeapon is MultiWeapon multi)
+                    {
+                        multi.UpgradeShotCount(shotIncrease);
+                    }
+                    break;
+            }
+        }
+
+        public void SetWeapon(Weapon weapon)
+        {
+            targetWeapon = weapon;
         }
     }
 
-    public void SetWeapon(Weapon weapon)
-    {
-        targetWeapon = weapon;
-    }
 }

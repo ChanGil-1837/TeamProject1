@@ -6,85 +6,90 @@ using TMPro;
 using UnityEditor;
 #endif
 
-[ExecuteAlways] // 에디터에서도 갱신되게
-[RequireComponent(typeof(UIButtonWeaponUpgrade))]
-public class UIButtonWeaponUpgradeController : MonoBehaviour
+
+namespace UI
 {
-    [SerializeField] private Image thumbnail;
-    [SerializeField] private TextMeshProUGUI textLabel;
-    [SerializeField] private TextMeshProUGUI costLabel;
-
-    [SerializeField] private Sprite normalIcon;
-    [SerializeField] private Sprite multiIcon;
-    [SerializeField] private Sprite boundIcon;
-
-    private UIButtonWeaponUpgrade buttonLogic;
-
-    private void Awake()
+    [ExecuteAlways] // 에디터에서도 갱신되게
+    [RequireComponent(typeof(UIButtonWeaponUpgrade))]
+    public class UIButtonWeaponUpgradeController : MonoBehaviour
     {
-        buttonLogic = GetComponent<UIButtonWeaponUpgrade>();
-    }
+        [SerializeField] private Image thumbnail;
+        [SerializeField] private TextMeshProUGUI textLabel;
+        [SerializeField] private TextMeshProUGUI costLabel;
 
-    private void Start()
-    {
-        UpdateUI();
-    }
+        [SerializeField] private Sprite normalIcon;
+        [SerializeField] private Sprite multiIcon;
+        [SerializeField] private Sprite boundIcon;
 
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (!Application.isPlaying)
+        private UIButtonWeaponUpgrade buttonLogic;
+
+        private void Awake()
         {
-            if (buttonLogic == null)
-            {
-                buttonLogic = GetComponent<UIButtonWeaponUpgrade>();
-            }
-                
+            buttonLogic = GetComponent<UIButtonWeaponUpgrade>();
+        }
+
+        private void Start()
+        {
             UpdateUI();
-            EditorApplication.QueuePlayerLoopUpdate();
-        }
-    }
-#endif
-
-    public void UpdateUI()
-    {
-        if (buttonLogic == null) return;
-
-        switch (buttonLogic.weaponType)
-        {
-            case WeaponType.Normal:
-                if (thumbnail) thumbnail.sprite = normalIcon;
-                break;
-            case WeaponType.Multi:
-                if (thumbnail) thumbnail.sprite = multiIcon;
-                break;
-            case WeaponType.Bounce:
-                if (thumbnail) thumbnail.sprite = boundIcon;
-                break;
         }
 
-        if (textLabel)
+    #if UNITY_EDITOR
+        private void OnValidate()
         {
-            switch (buttonLogic.upgradeType)
+            if (!Application.isPlaying)
             {
-                case UpgradeType.Damage:
-                    textLabel.text = $"ATK +{buttonLogic.upgradeAmount:F0}";
-                    break;
-                case UpgradeType.FireRate:
-                    float percent = (1 - buttonLogic.fireRateMultiplier) * 100f;
-                    textLabel.text = $"SPD +{percent:F0}%";
-                    break;
-                case UpgradeType.ShotCount:
-                    textLabel.text = $"SHOT COUNT +{buttonLogic.shotIncrease}";
-                    break;
+                if (buttonLogic == null)
+                {
+                    buttonLogic = GetComponent<UIButtonWeaponUpgrade>();
+                }
+                    
+                UpdateUI();
+                EditorApplication.QueuePlayerLoopUpdate();
             }
         }
+    #endif
 
-        if(costLabel)
+        public void UpdateUI()
         {
-            costLabel.text = $"{buttonLogic.upgradeCost}G";
+            if (buttonLogic == null) return;
+
+            switch (buttonLogic.weaponType)
+            {
+                case WeaponType.Normal:
+                    if (thumbnail) thumbnail.sprite = normalIcon;
+                    break;
+                case WeaponType.Multi:
+                    if (thumbnail) thumbnail.sprite = multiIcon;
+                    break;
+                case WeaponType.Bounce:
+                    if (thumbnail) thumbnail.sprite = boundIcon;
+                    break;
+            }
+
+            if (textLabel)
+            {
+                switch (buttonLogic.upgradeType)
+                {
+                    case UpgradeType.Damage:
+                        textLabel.text = $"ATK +{buttonLogic.upgradeAmount:F0}";
+                        break;
+                    case UpgradeType.FireRate:
+                        float percent = (1 - buttonLogic.fireRateMultiplier) * 100f;
+                        textLabel.text = $"SPD +{percent:F0}%";
+                        break;
+                    case UpgradeType.ShotCount:
+                        textLabel.text = $"SHOT COUNT +{buttonLogic.shotIncrease}";
+                        break;
+                }
+            }
+
+            if(costLabel)
+            {
+                costLabel.text = $"{buttonLogic.upgradeCost}G";
+            }
         }
     }
+
+
+
 }
-
-
