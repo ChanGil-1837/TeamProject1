@@ -2,30 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-enum WeaponType
+public enum WeaponType
 {
     Normal,
     Multi,
     Bounce,
 }
 
+
 public abstract class Weapon : MonoBehaviour
 {
-    [Header("공격력")]
+    public WeaponType weaponType;
+
+    [Header("Damage")]
     [SerializeField] private float damage;
 
-    [Header("공격 주기")]
+    [Header("Interval")]
     [SerializeField] private float baseInterval;
 
-    [Header("레벨")]
+    [Header("Level")]
     [SerializeField] private int level;
 
-    [Header("투사체")]
+    [Header("Prefab")]
     [SerializeField] private Projectile projectilePrefab;
-    [SerializeField] protected int projectileCount;
 
-    [Header("풀")]
+    [Header("Pool")]
     [SerializeField] private int poolSize;
 
     public float Damage => damage;
@@ -35,7 +36,7 @@ public abstract class Weapon : MonoBehaviour
     private WaitForSeconds attackInterval;
     private WaitUntil fireState;
 
-    // 테스트용
+    // Test
     [SerializeField] protected Transform target;
     private bool canFire;
 
@@ -68,8 +69,8 @@ public abstract class Weapon : MonoBehaviour
 
     //---------------------------------------------------
 
-    #region 풀링
-    // 새로운 투사체 생성
+    #region Pooling
+
     private Projectile NewProjectile()
     {
         Projectile newProjectile = Instantiate(projectilePrefab, transform);
@@ -80,26 +81,22 @@ public abstract class Weapon : MonoBehaviour
         return newProjectile;
     }
 
-    // 풀에서 투사체 사용
+
     protected Projectile GetFromPool()
     {
         Projectile projectile;
 
-        // 남는 투사체 없음
         if (projectilePool.Count <= 0)
         {
             projectile = NewProjectile();
         }
 
-        // 풀 투사체 사용
         projectile = projectilePool.Dequeue();
 
-        // 활성화
         projectile.gameObject.SetActive(true);
 
         return projectile;
     }
-    // 투사체 풀 반환
     public void ReturnToPool(Projectile projectile)
     {
         projectilePool.Enqueue(projectile);
@@ -110,12 +107,10 @@ public abstract class Weapon : MonoBehaviour
 
     //---------------------------------------------------
 
-    #region 공격
+    #region Attack
 
-    // 발사
     public abstract void Fire();
 
-    // 공격 코루틴
     IEnumerator Attack()
     {
         while (true)
@@ -131,6 +126,29 @@ public abstract class Weapon : MonoBehaviour
 
     //---------------------------------------------------
 
-    // 업그레이드
-    public void UpgradeWeapon() { }
+    #region Upgrade
+
+    public virtual void UpgradeDamage(int upgradeAmount)
+    {
+        damage += upgradeAmount;
+    }
+    public virtual void UpgradeFireRate(float fireRateMultiplier)
+    {
+        baseInterval *= fireRateMultiplier;
+        attackInterval = new WaitForSeconds(baseInterval);
+    }
+
+    #endregion
+
+    //---------------------------------------------------
+
+
+    // Set Projectile Active Transform 
+    protected void SetProjectileTransform(Projectile projectile, Vector3 direction)
+    {
+        projectile.transform.position = transform.position;
+        projectile.transform.rotation = Quaternion.LookRotation(direction);
+        projectile.SetDirection(direction);
+    }
+
 }
