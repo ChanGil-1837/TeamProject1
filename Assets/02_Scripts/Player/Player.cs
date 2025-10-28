@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-//using TeamProject.GameSystem; //아마 게임매니저쪽 네임스페이스
+using TeamProject.GameSystem; //아마도 게임매니저쪽 네임스페이스
 using UnityEngine;
 
 public enum UpgradeType
@@ -46,15 +46,15 @@ public class Player : MonoBehaviour
     private const float CostMultiplier = 1.2f; //비용 비율 20퍼
     private const float RegenInterval = 1f; //1초마다 회복
     private float _regenTimer = 0f; //재생 누적용 타이머
-    private float _scanInterval = 0.5f;  //0.5초마다 탐색
+    private float _scanInterval = 0.1f;  //0.1초마다 탐색(0.5초는 반응이 늦음)
     private float _scanTimer = 0f; //스캔 누적용타이머
     private IEnemy _closestEnemy; //탐지된 가장 가까운 적(무기가 받을수있도록)
 
 
-    //읽기전용 프로퍼티 아직은 어떻게 돌아갈지 몰라서 대충 지정해둠
+    //읽기전용 프로퍼티 아직은 어떻게 돌아갈지 몰라서 대충 지정해 둠
     public float CurrentHp => _currentHp;//변동된 체력
     public float MaxHp => _baseMaxHp;
-    public float AttackRange => _detectRange;
+    public float DetectRange => _detectRange;//이름 수정함
     public float HpRegen => _baseHpRegen;
     public float Defense => _baseDef;
     public int Gold => _gold;
@@ -67,15 +67,17 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
+        //방어코드
         if (_detectCollider == null)
         {
-            _detectCollider = GetComponent<SphereCollider>();
+            _detectCollider = GetComponent<SphereCollider>();//없는지 확인
         }
         if (_detectCollider == null)
         {
-            _detectCollider = gameObject.AddComponent<SphereCollider>();
+            _detectCollider = gameObject.AddComponent<SphereCollider>();//없다면 찾아서 연결
         }
         _detectCollider.isTrigger = true; // 트리거로 강제 설정
+        _detectCollider.radius = _detectRange; //초기 범위 동기화
     }
     private void Start()
     {
@@ -83,7 +85,7 @@ public class Player : MonoBehaviour
     }
     private void Update()
     {
-        if (_isDead == true)// || GameManager.Instance.IsPlaying() == false)//정지 혹은 사망이라면
+        if (_isDead == true || GameManager.Instance?.IsPlaying() == false)//정지 혹은 사망이라면
         {
             return;
         }
@@ -92,7 +94,7 @@ public class Player : MonoBehaviour
         if (_regenTimer >= RegenInterval) //누적시간 >= 1초
         {
             _regenTimer = 0f; //초기화
-            TickTime(RegenInterval); //틱타임 1초간격
+            HpRegenTime(RegenInterval); //리젠타임 1초간격
         }
     }
     private void LateUpdate()
@@ -145,7 +147,7 @@ public class Player : MonoBehaviour
         if (_currentHp <= 0)
         {
             Die();
-            //GameManager.Instance.GameOver();
+            GameManager.Instance?.GameOver();
         }
     }
     /// <summary>
@@ -218,7 +220,7 @@ public class Player : MonoBehaviour
         _weapons.Add(weapon);
     }
 
-    private void TickTime(float deltaTime)
+    private void HpRegenTime(float deltaTime)//알기쉽게 메서드명 변경
     {
         _currentHp = Mathf.Min(_currentHp + _baseHpRegen * deltaTime, _baseMaxHp);
         OnStatsChanged?.Invoke();
@@ -303,6 +305,10 @@ public class Player : MonoBehaviour
     /// </summary>
     private void OnValidate()//콜라이더 실시간 반영
     {
+        if (_detectCollider == null)//방어코드
+        {
+            _detectCollider = GetComponent<SphereCollider>();//없다면 복구
+        }
         if (_detectCollider != null)
         {
             _detectCollider.radius = _detectRange;//탐색범위로
