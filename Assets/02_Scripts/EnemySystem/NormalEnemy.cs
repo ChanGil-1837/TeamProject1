@@ -29,7 +29,7 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     private float reward; // 보상
 
     public bool IsDead { get; set; }
-    public Transform Transform { get; set; }
+    public Transform Transform { get { return transform; } }
 
     private void Start()
     {
