@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using TeamProject.GameSystem;
+//using TeamProject.GameSystem;
 using UnityEngine;
 
 public enum UpgradeType
@@ -9,8 +9,7 @@ public enum UpgradeType
     MaxHp,
     Defense,
     HpRegen,
-    DetectRange,
-    GoldMultiplier,
+    DetectRange
 }
 
 public class Player : MonoBehaviour
@@ -19,18 +18,21 @@ public class Player : MonoBehaviour
     [SerializeField] private float _baseMaxHp = 100f;//최대체력
     [SerializeField] private float _baseHpRegen = 0.1f; //기본체력리젠
     [SerializeField] private float _baseDef = 0f; //방어력
-    [SerializeField] private float _baseGoldMultiplier = 0f; //골드획득비율
     [SerializeField] private float _detectRange = 5f;//적 탐색 범위
 
     [Header("Player Gold")]
     [SerializeField] private int _gold;//보유 골드
 
     [Header("Runtime State")]
+    [SerializeField] private SphereCollider _detectCollider;//탐색용 콜라이더
     private float _currentHp;//변동된 체력(현재 체력임 변동 되기에 따로 이름을 바꾼것)
     private bool _isDead = false;//사망여부
 
     [Header("Weapon")]
     [SerializeField] private List<Weapon> _weapons = new List<Weapon>();//무기 넣을것들(추가식으로 하니까 리스트로 작성)
+
+    //[Header("Enemy Spawn Data")]
+    //[SerializeField] private EnemySpawner _enemySpawner;//인스펙터로 연결해서 리스트받을까함(보류)
 
     //딕셔너리로 비용, 능력치 상승 관리
     [Header("Upgrade Data")]
@@ -39,12 +41,14 @@ public class Player : MonoBehaviour
         {UpgradeType.MaxHp, (100, 10f) }, //비용, 상승치
         {UpgradeType.HpRegen, (120, 0.1f) },
         {UpgradeType.DetectRange, (200, 0.5f) },
-        {UpgradeType.Defense, (150, 0.5f) },
-        {UpgradeType.GoldMultiplier, (500, 0.05f) }
+        {UpgradeType.Defense, (150, 0.5f) }
     };
     private const float CostMultiplier = 1.2f; //비용 비율 20퍼
     private const float RegenInterval = 1f; //1초마다 회복
-    private float _regenTimer = 0f;//누적용 타이머
+    private float _regenTimer = 0f; //재생 누적용 타이머
+    private float _scanInterval = 0.5f;  //0.5초마다 탐색
+    private float _scanTimer = 0f; //스캔 누적용타이머
+    private IEnemy _closestEnemy; //탐지된 가장 가까운 적(무기가 받을수있도록)
 
 
     //읽기전용 프로퍼티 아직은 어떻게 돌아갈지 몰라서 대충 지정해둠
@@ -54,20 +58,32 @@ public class Player : MonoBehaviour
     public float HpRegen => _baseHpRegen;
     public float Defense => _baseDef;
     public int Gold => _gold;
-    public float GoldMultiplier => _baseGoldMultiplier;
     public bool IsDead => _isDead;
+    public IEnemy ClosestEnemy => _closestEnemy;//적위치 프로퍼티로 열람
 
 
     public event Action OnStatsChanged; //스텟 수치 변화시 호출
     public event Action<int> OnGoldChanged; //골드 변화시 호출
 
+    private void Awake()
+    {
+        if (_detectCollider == null)
+        {
+            _detectCollider = GetComponent<SphereCollider>();
+        }
+        if (_detectCollider == null)
+        {
+            _detectCollider = gameObject.AddComponent<SphereCollider>();
+        }
+        _detectCollider.isTrigger = true; // 트리거로 강제 설정
+    }
     private void Start()
     {
         Init();
     }
     private void Update()
     {
-        if (_isDead == true || GameManager.Instance.IsPlaying() == false)//정지 혹은 사망이라면
+        if (_isDead == true)// || GameManager.Instance.IsPlaying() == false)//정지 혹은 사망이라면
         {
             return;
         }
@@ -75,8 +91,21 @@ public class Player : MonoBehaviour
 
         if (_regenTimer >= RegenInterval) //누적시간 >= 1초
         {
+            _regenTimer = 0f; //초기화
             TickTime(RegenInterval); //틱타임 1초간격
-            _regenTimer = 0f; //다시 초기화
+        }
+    }
+    private void LateUpdate()
+    {
+        if (_isDead)
+        {
+            return;
+        }
+        _scanTimer += Time.deltaTime; //프레임당 시간 누적
+        if (_scanTimer >= _scanInterval) //누적시간 >= 0.5초
+        {
+            _scanTimer = 0f;
+            Scan();
         }
     }
     public void Init()
@@ -85,32 +114,17 @@ public class Player : MonoBehaviour
         _currentHp = _baseMaxHp;
         _detectRange = 5f;
         _baseDef = 0f;
-        _baseGoldMultiplier = 0f;
         _baseHpRegen = 0.1f;
         _isDead = false;
         _regenTimer = 0f;
+        _scanTimer = 0f;
         OnStatsChanged?.Invoke();
     }
-    public void AddGold(int amount)//골드 획득부분은 적리워드 필요(이야기할 필요가 있음),게임매니저의 개입이 낫다 생각됨(적죽음관련)
+    public void AddGold(int amount)
     {
-        int finalGold = Mathf.RoundToInt(amount * (1 + _baseGoldMultiplier));
-        _gold += finalGold;
+        //int finalGold = Mathf.RoundToInt(amount * (1 + _baseGoldMultiplier));
+        _gold += amount;//finalGold;
         OnGoldChanged?.Invoke(_gold);
-    }
-
-    public void Attack(List<IEnemy> enemies)//가까운적 찾아서 공격
-    {
-        if (_weapons == null)
-        {
-            return;
-        }
-        IEnemy target = FindClosestEnemy(enemies);//가까운 적의 위치를 찾고
-        if (target != null)//타겟이 있다면
-        {
-            //무기가 위치정보 받을 메서드 필요(이야기할 필요가 있음)
-            //_weapon.Fire();
-        }
-
     }
     public void TakeDamage(float damage)
     {
@@ -120,7 +134,7 @@ public class Player : MonoBehaviour
         if (_currentHp <= 0)
         {
             Die();
-            GameManager.Instance.GameOver();
+            //GameManager.Instance.GameOver();
         }
     }
     public void UpgradeStats(UpgradeType type)
@@ -149,19 +163,12 @@ public class Player : MonoBehaviour
             case UpgradeType.DetectRange:
                 DetectRangeUp(value);
                 break;
-            case UpgradeType.GoldMultiplier:
-                GoldMultiplierUp(value);
-                break;
-
         }
         int newCost = Mathf.RoundToInt(cost * CostMultiplier); //상승된 비용 적용
         _upgradeValue[type] = (newCost, value); //딕셔너리에 반영
         OnStatsChanged?.Invoke();
     }
-    public void Reset()//상점을 만들어서 기본능력치를 더 올릴것이라고 한다면 추가할 예정,아니라고 하면 삭제
-    {
-        Init();//현재 동작은 Init과 같음
-    }
+
     public bool SpendGold(int cost)
     {
         if (_gold < cost)//금액 부족시 false
@@ -178,11 +185,14 @@ public class Player : MonoBehaviour
         {
             return;
         }
-        //_weapon = weapon; //무기 저장
-        //_weapon.transform.SetParent(transform); //플레이어 자식으로
-        //_weapon.transform.localPosition = Vector3.zero; //위치 초기화
-        //_weapon.transform.localRotation = Quaternion.identity;
-
+        if (_weapons.Contains(weapon))//같은 무기면 중복 방지
+        {
+            return;
+        }
+        weapon.transform.SetParent(transform); //플레이어 자식으로
+        weapon.transform.localPosition = Vector3.zero; //위치 초기화
+        weapon.transform.localRotation = Quaternion.identity;
+        _weapons.Add(weapon);
     }
 
     private void TickTime(float deltaTime)
@@ -193,27 +203,48 @@ public class Player : MonoBehaviour
 
     private IEnemy FindClosestEnemy(List<IEnemy> enemies)//가까운 적 찾기
     {
+        if (enemies == null || enemies.Count == 0)//null 방지용
+        {
+            return null;
+        }
         IEnemy closestEnemy = null;
-        //float closestDistance = float.MaxValue; //거리 비교용(최대값)
-        //foreach (IEnemy enemy in enemies) //전달받은 적 순회
-        //{
-        //    if (enemy == null)// || enemy.IsDead) //null 이거나 죽은 적 무시
-        //    {
-        //        continue;
-        //    }
-        //    float enemyDistance = (transform.position - enemy.Transform.position).sqrMagnitude;//적 거리 계산
-        //    if (enemyDistance < (_detectRange * _detectRange) && enemyDistance < closestDistance)//적 거리가 탐지범위 그리고 가장 가까운 적 범위보다 작다면
-        //    {
-        //        closestEnemy = enemy; //가장 가까운 적 갱신
-        //        closestDistance = enemyDistance; //가장 가까운 적 거리 갱신
-        //    }
-        //}
+        float closestDistance = float.MaxValue; //거리 비교용(최대값)
+        foreach (IEnemy enemy in enemies) //전달받은 적 순회
+        {
+            if (enemy == null)// || enemy.IsDead) //null 이거나 죽은 적 무시
+            {
+                continue;
+            }
+            float enemyDistance = (transform.position - enemy.Transform.position).sqrMagnitude;//적 거리 계산
+            if (enemyDistance < (_detectRange * _detectRange) && enemyDistance < closestDistance)//적 거리가 탐지범위 그리고 가장 가까운 적 범위보다 작다면
+            {
+                closestEnemy = enemy; //가장 가까운 적 갱신
+                closestDistance = enemyDistance; //가장 가까운 적 거리 갱신
+            }
+        }
         return closestEnemy; //가장 가까운 적 리턴
+    }
+    private void Scan()
+    {
+        if(_isDead)//플레이어 사망시 정지
+        {
+            return;
+        }
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");//적 태그를 가진 모든 오브젝트(수정해야 될 수도있음)
+        List<IEnemy> enemyList = new List<IEnemy>(enemies.Length); //리스트 생성
+        foreach (GameObject obj in enemies)
+        {
+            if (obj.activeInHierarchy && obj.TryGetComponent<IEnemy>(out IEnemy enemy))//활성화,적인터페이스가진 적만
+            {
+                enemyList.Add(enemy);//리스트에 추가
+            }
+        }
+        _closestEnemy = FindClosestEnemy(enemyList);//가까운적 계산
     }
     private void Die()
     {
         _isDead = true;
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
     }
 
     private void HpRegenUp(float value)
@@ -232,10 +263,18 @@ public class Player : MonoBehaviour
     private void DetectRangeUp(float value)
     {
         _detectRange += value;
+        if (_detectCollider != null)
+            _detectCollider.radius = _detectRange;//범위 갱신
     }
-    private void GoldMultiplierUp(float value)
+    private void OnValidate()//콜라이더 실시간 반영
     {
-        _baseGoldMultiplier += value;
+        if (_detectCollider != null)
+            _detectCollider.radius = _detectRange;//탐색범위로
+    }
+    private void OnDrawGizmosSelected()//기즈모로 탐지범위 시각화
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, _detectRange);
     }
 
 }
