@@ -19,7 +19,7 @@ public sealed class BounceProjectile : Projectile
     {
         if (enemy != null)
         {
-            //enemy.TakeDamage(weapon.Damage);
+            enemy.TakeDamage(weapon.Damage);
 
             lastEnemy = enemy;
 

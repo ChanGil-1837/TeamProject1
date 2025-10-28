@@ -15,7 +15,7 @@ public abstract class Weapon : MonoBehaviour
     public WeaponType weaponType;
 
     [Header("Damage")]
-    [SerializeField] private float damage;
+    [SerializeField] private int damage;
 
     [Header("Interval")]
     [SerializeField] private float baseInterval;
@@ -29,7 +29,7 @@ public abstract class Weapon : MonoBehaviour
     [Header("Pool")]
     [SerializeField] private int poolSize;
 
-    public float Damage => damage;
+    public int Damage => damage;
 
     private Queue<Projectile> projectilePool = new();
     private Coroutine attackCoroutine;

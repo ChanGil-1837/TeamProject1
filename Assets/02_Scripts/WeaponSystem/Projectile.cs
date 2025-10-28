@@ -41,7 +41,7 @@ public class Projectile : MonoBehaviour
     {
         if(enemy != null)
         {
-            //enemy.TakeDamage(weapon.Damage);
+            enemy.TakeDamage(weapon.Damage);
         }
 
         DisableProjectile();
