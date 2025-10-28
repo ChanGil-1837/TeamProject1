@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TeamProject.GameSystem;
 using UnityEngine;
 
 public enum UpgradeType
@@ -26,11 +27,11 @@ public class Player : MonoBehaviour
     [SerializeField] private int _gold;//보유 골드
 
     [Header("Runtime State")]
-    private float _currentHp;//변동된 체력(현재 체력임 변동 되기에 따로 이름하고 바꾼것)
+    private float _currentHp;//변동된 체력(현재 체력임 변동 되기에 따로 이름을 바꾼것)
     private bool _isDead = false;//사망여부
 
     [Header("Weapon")]
-    [SerializeField] private Weapon _weapon;//무기 넣을것
+    [SerializeField] private List<Weapon> _weapon = new List<Weapon>();//무기 넣을것들(추가식으로 하니까 리스트로 작성)
 
     //딕셔너리로 비용, 능력치 상승 관리
     [Header("Upgrade Data")]
@@ -67,7 +68,7 @@ public class Player : MonoBehaviour
     }
     private void Update()
     {
-        if (_isDead == true) //|| GameManager.Instance.IsPlaying() == false)//정지 혹은 사망이라면
+        if (_isDead == true || GameManager.Instance.IsPlaying() == false)//정지 혹은 사망이라면
         {
             return;
         }
@@ -97,16 +98,7 @@ public class Player : MonoBehaviour
         _gold += finalGold;
         OnGoldChanged?.Invoke(_gold);
     }
-    public bool SpendGold(int cost)
-    {
-        if (_gold < cost)//금액 부족시 false
-        {
-            return false;
-        }
-        _gold -= cost;
-        OnGoldChanged?.Invoke(_gold);
-        return true;
-    }
+    
     public void Attack(List<IEnemy> enemies)//가까운적 찾아서 공격
     {
         if (_weapon == null)
@@ -117,19 +109,19 @@ public class Player : MonoBehaviour
         if (target != null)//타겟이 있다면
         {
             //무기가 위치정보 받을 메서드 필요(이야기할 필요가 있음)
-            _weapon.Fire();
+            //_weapon.Fire();
         }
 
     }
     public void TakeDamage(float damage)
     {
-        damage = Mathf.Max(damage - _baseDef, 1f);//방어력이 공격력보다 높다면 무적상태를 줄것인가?
+        damage = Mathf.Max(damage - _baseDef, 1f);//방어력이 공격력보다 높다면 무적상태를 줄것인가? 기본1은 받도록 해둠
         _currentHp -= damage;
         OnStatsChanged?.Invoke();
         if (_currentHp <= 0)
         {
             Die();
-            //GameManager.Instance.GameOver();
+            GameManager.Instance.GameOver();
         }
     }
     public void UpgradeStats(UpgradeType type)
@@ -164,7 +156,7 @@ public class Player : MonoBehaviour
             case UpgradeType.Weapon:
                 if (_weapon != null)
                 {
-                    _weapon.UpgradeWeapon();//무기 업그레이드 호출
+                    //_weapon.UpgradeWeapon();//무기 업그레이드 호출
                 }
                 break;
         }
@@ -176,9 +168,27 @@ public class Player : MonoBehaviour
     {
         Init();//현재 동작은 Init과 같음
     }
+    private bool SpendGold(int cost)
+    {
+        if (_gold < cost)//금액 부족시 false
+        {
+            return false;
+        }
+        _gold -= cost;
+        OnGoldChanged?.Invoke(_gold);
+        return true;
+    }
     private void AddWeapon(Weapon weapon)
     {
-        //무기 추가,장착
+        if (weapon == null)
+        {
+            return;
+        }
+        //_weapon = weapon; //무기 저장
+        //_weapon.transform.SetParent(transform); //플레이어 자식으로
+        //_weapon.transform.localPosition = Vector3.zero; //위치 초기화
+        //_weapon.transform.localRotation = Quaternion.identity;
+
     }
 
     private void TickTime(float deltaTime)
