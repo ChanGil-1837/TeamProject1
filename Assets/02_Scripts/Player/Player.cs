@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-//using TeamProject.GameSystem;
+//using TeamProject.GameSystem; //아마 게임매니저쪽 네임스페이스
 using UnityEngine;
 
 public enum UpgradeType
@@ -108,6 +108,9 @@ public class Player : MonoBehaviour
             Scan();
         }
     }
+    /// <summary>
+    /// 플레이어 초기화
+    /// </summary>
     public void Init()
     {
         _baseMaxHp = 100f;
@@ -120,12 +123,20 @@ public class Player : MonoBehaviour
         _scanTimer = 0f;
         OnStatsChanged?.Invoke();
     }
+    /// <summary>
+    /// 골드 획득
+    /// </summary>
+    /// <param name="amount">획득량</param>
     public void AddGold(int amount)
     {
         //int finalGold = Mathf.RoundToInt(amount * (1 + _baseGoldMultiplier));
         _gold += amount;//finalGold;
         OnGoldChanged?.Invoke(_gold);
     }
+    /// <summary>
+    /// 플레이어가 입은 피해
+    /// </summary>
+    /// <param name="damage">피해량</param>
     public void TakeDamage(float damage)
     {
         damage = Mathf.Max(damage - _baseDef, 1f);//방어력이 공격력보다 높다면 무적상태를 줄것인가? 기본1은 받도록 해둠
@@ -137,6 +148,10 @@ public class Player : MonoBehaviour
             //GameManager.Instance.GameOver();
         }
     }
+    /// <summary>
+    /// 플레이어 스텟 업그레이드
+    /// </summary>
+    /// <param name="type">업그레이드 타입</param>
     public void UpgradeStats(UpgradeType type)
     {
         if (_upgradeValue.TryGetValue(type, out (int cost, float value) data) == false)//딕셔너리에 해당 업그레이드 타입 정보가 없다면
@@ -168,7 +183,11 @@ public class Player : MonoBehaviour
         _upgradeValue[type] = (newCost, value); //딕셔너리에 반영
         OnStatsChanged?.Invoke();
     }
-
+    /// <summary>
+    /// 골드 사용 가능 여부
+    /// </summary>
+    /// <param name="cost">비용</param>
+    /// <returns></returns>
     public bool SpendGold(int cost)
     {
         if (_gold < cost)//금액 부족시 false
@@ -179,6 +198,10 @@ public class Player : MonoBehaviour
         OnGoldChanged?.Invoke(_gold);
         return true;
     }
+    /// <summary>
+    /// 무기 추가
+    /// </summary>
+    /// <param name="weapon"></param>
     private void AddWeapon(Weapon weapon)
     {
         if (weapon == null)
@@ -200,7 +223,11 @@ public class Player : MonoBehaviour
         _currentHp = Mathf.Min(_currentHp + _baseHpRegen * deltaTime, _baseMaxHp);
         OnStatsChanged?.Invoke();
     }
-
+    /// <summary>
+    /// 가까운적 거리 계산
+    /// </summary>
+    /// <param name="enemies">적 리스트</param>
+    /// <returns></returns>
     private IEnemy FindClosestEnemy(List<IEnemy> enemies)//가까운 적 찾기
     {
         if (enemies == null || enemies.Count == 0)//null 방지용
@@ -211,7 +238,7 @@ public class Player : MonoBehaviour
         float closestDistance = float.MaxValue; //거리 비교용(최대값)
         foreach (IEnemy enemy in enemies) //전달받은 적 순회
         {
-            if (enemy == null)// || enemy.IsDead) //null 이거나 죽은 적 무시
+            if (enemy == null || enemy.IsDead) //null 이거나 죽은 적 무시
             {
                 continue;
             }
@@ -224,6 +251,9 @@ public class Player : MonoBehaviour
         }
         return closestEnemy; //가장 가까운 적 리턴
     }
+    /// <summary>
+    /// 적 탐지
+    /// </summary>
     private void Scan()
     {
         if(_isDead)//플레이어 사망시 정지
@@ -264,12 +294,19 @@ public class Player : MonoBehaviour
     {
         _detectRange += value;
         if (_detectCollider != null)
+        {
             _detectCollider.radius = _detectRange;//범위 갱신
+        }
     }
+    /// <summary>
+    /// 
+    /// </summary>
     private void OnValidate()//콜라이더 실시간 반영
     {
         if (_detectCollider != null)
+        {
             _detectCollider.radius = _detectRange;//탐색범위로
+        }
     }
     private void OnDrawGizmosSelected()//기즈모로 탐지범위 시각화
     {
