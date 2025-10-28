@@ -13,7 +13,7 @@ public interface IEnemy
     void MoveToPlayer();
 
     // 공격주기 갱신
-    void AttackToPlayer();
+    //void AttackToPlayer();
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
     void Die();
