@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum Type { normal, tank, speed, boss } // 적 타입	
+
 public interface IEnemy
 {
-    private enum Type { normal, tank, speed, boss } // 적 타입	
-
     // 초기화
     void Init();
 
@@ -23,6 +23,11 @@ public interface IEnemy
 
     // 적 상태
     public bool IsDead
+    {
+        get;
+    }
+
+    public Transform Transform
     {
         get;
     }

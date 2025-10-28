@@ -13,23 +13,23 @@ public class EnemySpawner : MonoBehaviour
 
     private List<Transform> spawnPoints; // 스폰 포인트	
     private float spawnerInterval; // 적 생성주기	
-    //private List<GameObject> activeEnemies = new List<GameObject>(); // 생성한 적 리스트
-    //private List<GameObject> suffleActiveEnemies = new List<GameObject>(); // 적 셔플 리스트
-    private List<EnemyData> activeEnemies = new List<EnemyData>();
-    private List<EnemyData> suffleActiveEnemies = new List<EnemyData>();
+    private List<GameObject> activeEnemies = new List<GameObject>(); // 생성한 적 리스트
+    private List<GameObject> suffleActiveEnemies = new List<GameObject>(); // 적 셔플 리스트
+    //private List<EnemyData> activeEnemies = new List<EnemyData>();
+    //private List<EnemyData> suffleActiveEnemies = new List<EnemyData>();
 
     int enemyTurn = 0;
-    public struct EnemyData
-    {
-        public GameObject gameOJ;
-        public IEnemy enemyInterface;
+    //public struct EnemyData
+    //{
+    //    public GameObject gameOJ;
+    //    public IEnemy enemyInterface;
 
-        public EnemyData(GameObject GO, IEnemy IF)
-        {
-            gameOJ = GO;
-            enemyInterface = IF;
-        }
-    }
+    //    public EnemyData(GameObject GO, IEnemy IF)
+    //    {
+    //        gameOJ = GO;
+    //        enemyInterface = IF;
+    //    }
+    //}
 
 
     //리스트 번호
@@ -70,8 +70,8 @@ public class EnemySpawner : MonoBehaviour
 
                     if (direction.magnitude >= _attackRange - 1)
                     {
-                        activeEnemies[enemyTurn].gameOJ.transform.position = direction;
-                        activeEnemies[enemyTurn].gameOJ.SetActive(true);
+                        activeEnemies[enemyTurn].transform.position = direction;
+                        activeEnemies[enemyTurn].SetActive(true);
                         enemyTurn++;
                         Debug.Log($"{enemyTurn}번 적 생성");
                         break;
@@ -92,7 +92,7 @@ public class EnemySpawner : MonoBehaviour
         {
             for (int i = 0; i < activeEnemies.Count; i++)
             {
-                activeEnemies[i].gameOJ.SetActive(false);
+                activeEnemies[i].SetActive(false);
             }
         }
     }
@@ -106,16 +106,16 @@ public class EnemySpawner : MonoBehaviour
         for (int i = 0; i < enemyNumber; i++)
         {
             GameObject enemyType = Instantiate(_enemyPrefabs[prefabN]);
-            IEnemy enemy = enemyType.GetComponent<IEnemy>();
+            //IEnemy enemy = enemyType.GetComponent<IEnemy>();
 
             enemyType.name = $"{enemyName}-{enemyN}";
             enemyType.tag = "Enemy";
             enemyType.transform.parent = transform.Find("EnemySpwaner");
 
-            activeEnemies.Add(new EnemyData(enemyType, enemy));
+            activeEnemies.Add(enemyType);
 
             enemyType.SetActive(false);
-            Debug.Log($"{activeEnemies[ListN].gameOJ.name}");
+            Debug.Log($"{activeEnemies[ListN].name}");
             enemyN++;
             ListN++;
         }
@@ -129,7 +129,7 @@ public class EnemySpawner : MonoBehaviour
         int n = activeEnemies.Count;
 
         Debug.Log($"적 개수 : {activeEnemies.Count}");
-        List<EnemyData> temp = new List<EnemyData>();
+        List<GameObject> temp = new List<GameObject>();
         temp = activeEnemies;
 
         // 생성한 적 리스트를 섞어서 새리스트에 저장.
@@ -143,7 +143,7 @@ public class EnemySpawner : MonoBehaviour
             // 셔플리스트에 추가한 항목 제거
             activeEnemies.Remove(activeEnemies[randomN]);
 
-            Debug.Log($"셔플리스트 : {i} : {suffleActiveEnemies[i].gameOJ.name}");
+            Debug.Log($"셔플리스트 : {i} : {suffleActiveEnemies[i].name}");
         }
 
         activeEnemies = temp;

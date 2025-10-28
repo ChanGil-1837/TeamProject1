@@ -12,11 +12,8 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     private float currentHP; // 현재 체력
     // private Reward reward; // 보상???
 
-    public bool IsDead
-    {
-        get;
-        set;
-    }
+    public bool IsDead { get; set; }
+    public Transform Transform { get; set; }
 
     private void Start()
     {
@@ -59,7 +56,6 @@ public class NormalEnemy : MonoBehaviour, IEnemy
             Debug.Log($"{gameObject.name}접촉!");
             Die();
         }
-        
     }
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
