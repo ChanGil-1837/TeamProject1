@@ -60,7 +60,6 @@ public class EnemySpawner : MonoBehaviour
         GameObject EnemyBox = new GameObject("EnemyBox");
 
         CreateEnemy(normalEnemies, _normalEnemyNumber, "Normal", 0);
-        CreateEnemy(normalEnemies, 5, "Normal", 0);
         CreateEnemy(tankEnemies, _tankEnemyNumber, "Tank", 1);
         CreateEnemy(speedEnemies, _speedEnemyNumber, "Speed", 2);
         CreateEnemy(bossEnemies, _bossEnemyNumber, "Boss", 3);
@@ -78,7 +77,7 @@ public class EnemySpawner : MonoBehaviour
     // 적 소환
     private void SpawnEnemy()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0)) //추후에 웨이브 기준으로 변경
         {
             if (enemyTurn < activeEnemies.Count)
             {
@@ -98,7 +97,6 @@ public class EnemySpawner : MonoBehaviour
                         Debug.Log($"{enemyTurn}번 적 활성화");
                         break;
                     }
-
                 }
             }
             else if (activeEnemies.Count == enemyTurn)
@@ -127,9 +125,36 @@ public class EnemySpawner : MonoBehaviour
     //    }
     //}
 
-    //적 미리 생성
-    private void CreateEnemy(List<GameObject> enemyTypeint, int enemyNumber, string enemyName, int prefabN)
+
+    // 오브젝트 이름 중복을 피하기 위해 부여
+    private int EnemyNameID (List<GameObject> enemyTypeint)
     {
+        int IDN = 0;
+        if (enemyTypeint == normalEnemies)
+        {
+            IDN = 1000 + enemyTypeint.Count;
+        }
+        else if (enemyTypeint == tankEnemies)
+        {
+            IDN = 2000 + enemyTypeint.Count;
+        }
+        else if (enemyTypeint == speedEnemies)
+        {
+            IDN = 3000 + enemyTypeint.Count;
+        }
+        else if (enemyTypeint == bossEnemies)
+        {
+            IDN = 4000 + enemyTypeint.Count;
+        }
+
+        return IDN;
+    }
+
+    //적 미리 생성
+    private void CreateEnemy(List<GameObject> enemyTypeint, int enemyNumber, string enemyTypeName, int prefabN)
+    {
+        int nameID = EnemyNameID(enemyTypeint);
+
         // 희망생성 수보다 리스트가 적으면 새로 만들어서 추가
         if (enemyTypeint.Count < enemyNumber)
         {
@@ -138,17 +163,17 @@ public class EnemySpawner : MonoBehaviour
                 GameObject enemyType = Instantiate(_enemyPrefabs[prefabN], GameObject.Find("EnemyBox").transform);
                 //IEnemy enemy = enemyType.GetComponent<IEnemy>();
 
-
-                enemyType.name = $"{enemyName}-{i}";
+                enemyType.name = $"{enemyTypeName}-{nameID}";
                 enemyType.tag = "Enemy";
 
                 enemyTypeint.Add(enemyType);
 
                 enemyType.SetActive(false);
                 Debug.Log($"{enemyTypeint[i].name}");
+                nameID++;
             }
         }
-        // 희망생성 수보다 리스트가 많으면 첫번째 요소 삭제
+        // 희망생성 수보다 리스트가 많으면 요소 삭제(뒤에서부터)
         else if (enemyTypeint.Count > enemyNumber)
         {
             // 삭제할 개수
