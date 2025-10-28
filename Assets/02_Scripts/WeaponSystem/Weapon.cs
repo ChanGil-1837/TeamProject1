@@ -65,7 +65,29 @@ public abstract class Weapon : MonoBehaviour
         {
             canFire = !canFire;
         }
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            UpgradeFireRate(1.1f);
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            UpgradeFireRate(0.9f);
+        }
     }
+
+    private void OnDisable()
+    {
+        canFire = false;
+    }
+    private void OnDestroy()
+    {
+        if(attackCoroutine != null)
+        {
+            StopCoroutine(attackCoroutine);
+            attackCoroutine = null;
+        }
+    }
+
 
     //---------------------------------------------------
 
