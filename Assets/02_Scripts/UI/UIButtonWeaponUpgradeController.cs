@@ -70,14 +70,14 @@ namespace UI
             {
                 switch (buttonLogic.upgradeType)
                 {
-                    case UpgradeType.Damage:
+                    case UIUpgradeType.Damage:
                         textLabel.text = $"ATK +{buttonLogic.upgradeAmount:F0}";
                         break;
-                    case UpgradeType.FireRate:
+                    case UIUpgradeType.FireRate:
                         float percent = (1 - buttonLogic.fireRateMultiplier) * 100f;
                         textLabel.text = $"SPD +{percent:F0}%";
                         break;
-                    case UpgradeType.ShotCount:
+                    case UIUpgradeType.ShotCount:
                         textLabel.text = $"SHOT COUNT +{buttonLogic.shotIncrease}";
                         break;
                 }
@@ -85,7 +85,7 @@ namespace UI
 
             if(costLabel)
             {
-                costLabel.text = $"{buttonLogic.upgradeCost}G";
+                costLabel.text = $"{buttonLogic.upgradeCost}";
             }
         }
     }

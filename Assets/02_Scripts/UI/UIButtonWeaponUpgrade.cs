@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace UI
 {
-    public enum UpgradeType
+    public enum UIUpgradeType
     {
         Damage,
         FireRate,
@@ -12,7 +12,7 @@ namespace UI
 
     public class UIButtonWeaponUpgrade : MonoBehaviour
     {
-        public UpgradeType upgradeType;
+        public UIUpgradeType upgradeType;
         public WeaponType weaponType;
         public ulong upgradeCost;
         public int upgradeAmount = 1;
@@ -43,15 +43,15 @@ namespace UI
 
             switch (upgradeType)
             {
-                case UpgradeType.Damage:
+                case UIUpgradeType.Damage:
                     targetWeapon.UpgradeDamage(upgradeAmount);
                     break;
 
-                case UpgradeType.FireRate:
+                case UIUpgradeType.FireRate:
                     targetWeapon.UpgradeFireRate(fireRateMultiplier);
                     break;
 
-                case UpgradeType.ShotCount:
+                case UIUpgradeType.ShotCount:
                     if (targetWeapon is MultiWeapon multi)
                     {
                         multi.UpgradeShotCount(shotIncrease);
