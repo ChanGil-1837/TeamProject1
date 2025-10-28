@@ -5,9 +5,9 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     private Rigidbody rigid;
-    private Weapon weapon;
+    protected Weapon weapon;
 
-    [SerializeField] private float speed;   //속도
+    [SerializeField] private float speed;
 
     private void Awake()
     {
@@ -25,14 +25,23 @@ public class Projectile : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            if(other.TryGetComponent<IEnemy>(out IEnemy enemy))
-            {
-                //enemy.TakeDamage(weapon.Damage);
-            }
-            DisableProjectile();
+            IEnemy enemy;
+
+            other.TryGetComponent<IEnemy>(out enemy);
+
+            EnemyHit(enemy);
         }
     }
 
+    protected virtual void EnemyHit(IEnemy enemy)
+    {
+        if(enemy != null)
+        {
+            //enemy.TakeDamage(weapon.Damage);
+        }
+
+        DisableProjectile();
+    }
 
     // 방향, 속도 설정
     public void SetDirection(Vector3 dir)
