@@ -31,13 +31,17 @@ public class Projectile : MonoBehaviour
 
             EnemyHit(enemy);
         }
+        else if (other.CompareTag("Wall"))
+        {
+            DisableProjectile();
+        }
     }
 
     protected virtual void EnemyHit(IEnemy enemy)
     {
         if(enemy != null)
         {
-            //enemy.TakeDamage(weapon.Damage);
+            enemy.TakeDamage(weapon.Damage);
         }
 
         DisableProjectile();
@@ -53,7 +57,7 @@ public class Projectile : MonoBehaviour
     }
 
     // ¹ÝÈ¯
-    private void DisableProjectile()
+    protected void DisableProjectile()
     {
         weapon.ReturnToPool(this);
     }

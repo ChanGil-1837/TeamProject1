@@ -15,7 +15,7 @@ public abstract class Weapon : MonoBehaviour
     public WeaponType weaponType;
 
     [Header("Damage")]
-    [SerializeField] private float damage;
+    [SerializeField] private int damage;
 
     [Header("Interval")]
     [SerializeField] private float baseInterval;
@@ -29,7 +29,7 @@ public abstract class Weapon : MonoBehaviour
     [Header("Pool")]
     [SerializeField] private int poolSize;
 
-    public float Damage => damage;
+    public int Damage => damage;
 
     private Queue<Projectile> projectilePool = new();
     private Coroutine attackCoroutine;
@@ -65,7 +65,29 @@ public abstract class Weapon : MonoBehaviour
         {
             canFire = !canFire;
         }
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            UpgradeFireRate(1.1f);
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            UpgradeFireRate(0.9f);
+        }
     }
+
+    private void OnDisable()
+    {
+        canFire = false;
+    }
+    private void OnDestroy()
+    {
+        if(attackCoroutine != null)
+        {
+            StopCoroutine(attackCoroutine);
+            attackCoroutine = null;
+        }
+    }
+
 
     //---------------------------------------------------
 
