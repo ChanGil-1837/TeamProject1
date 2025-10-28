@@ -4,13 +4,24 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    [Header("적 프리팹")]
     [SerializeField] private List<GameObject> _enemyPrefabs;// 프리팹
+
+    [Header("Normal 적 생성")]
     [SerializeField] private int _normalEnemyNumber;
+
+    [Header("Tank 적 생성")]
     [SerializeField] private int _tankEnemyNumber;
+
+    [Header("Speed 적 생성")]
     [SerializeField] private int _speedEnemyNumber;
+
+    [Header("Boss 적 생성")]
     [SerializeField] private int _bossEnemyNumber;
-    [SerializeField] private float _attackRange = 10f; //GameObject.Find("Player").GetComponent<Player>().AttackRange;
-    [SerializeField] private float _spawnerInterval = 1.0f; // 적 생성주기	
+
+    [Header("적 생성 거리")]
+    [SerializeField] private float _attackRange = 10f;
+    //private float _spawnerInterval = 1.0f; // 적 생성주기	
 
 
 
@@ -46,13 +57,13 @@ public class EnemySpawner : MonoBehaviour
 
     private void Awake()
     {
-        new GameObject();
+        GameObject EnemyBox = new GameObject("EnemyBox");
 
         CreateEnemy(normalEnemies, _normalEnemyNumber, "Normal", 0);
         CreateEnemy(normalEnemies, 5, "Normal", 0);
-        //CreateEnemy(tankEnemies, _tankEnemyNumber, "Tank", 1);
-        //CreateEnemy(speedEnemies, _speedEnemyNumber, "Speed", 2);
-        //CreateEnemy(bossEnemies, _bossEnemyNumber, "Boss", 3);
+        CreateEnemy(tankEnemies, _tankEnemyNumber, "Tank", 1);
+        CreateEnemy(speedEnemies, _speedEnemyNumber, "Speed", 2);
+        CreateEnemy(bossEnemies, _bossEnemyNumber, "Boss", 3);
 
         ShuffleList();
     }
@@ -61,7 +72,7 @@ public class EnemySpawner : MonoBehaviour
     private void Update()
     {
         SpawnEnemy();
-        ClearEnemies();
+        //ClearEnemies();
     }
 
     // 적 소환
@@ -71,23 +82,26 @@ public class EnemySpawner : MonoBehaviour
         {
             if (enemyTurn < activeEnemies.Count)
             {
-                while (true)
+                // 비활성화된 상태에서만 위치 부여 + 활성화
+                while (activeEnemies[enemyTurn].activeSelf == false)
                 {
                     // 반지름 길이 = 사정거리 에서 몹 스폰
                     Vector3 direction = GameObject.Find("Player").transform.position + (Random.insideUnitSphere * _attackRange);
                     direction.y = 0;
 
+                    // 랜덤 위치가 유효한 거리인지
                     if (direction.magnitude >= _attackRange - 1)
                     {
                         activeEnemies[enemyTurn].transform.position = direction;
                         activeEnemies[enemyTurn].SetActive(true);
                         enemyTurn++;
-                        Debug.Log($"{enemyTurn}번 적 생성");
+                        Debug.Log($"{enemyTurn}번 적 활성화");
                         break;
                     }
+
                 }
             }
-            else if (activeEnemies.Count ==enemyTurn )
+            else if (activeEnemies.Count == enemyTurn)
             {
                 enemyTurn = 0;
             }
@@ -96,19 +110,22 @@ public class EnemySpawner : MonoBehaviour
                 Debug.Log($"전부 소환함");
             }
         }
+        
     }
+       
+    
 
     // 웨이브 종료시 삭제	
-    private void ClearEnemies()
-    {
-        if (false) // 웨이브 종료 조건
-        {
-            for (int i = 0; i < activeEnemies.Count; i++)
-            {
-                activeEnemies[i].SetActive(false);
-            }
-        }
-    }
+    //private void ClearEnemies()
+    //{
+    //    if (GetComponent<GameManagerPrototype>().IsGameOver == true) // 웨이브 종료 조건 추가해야 함.
+    //    {
+    //        for (int i = 0; i < activeEnemies.Count; i++)
+    //        {
+    //            activeEnemies[i].SetActive(false);
+    //        }
+    //    }
+    //}
 
     //적 미리 생성
     private void CreateEnemy(List<GameObject> enemyTypeint, int enemyNumber, string enemyName, int prefabN)
@@ -118,12 +135,12 @@ public class EnemySpawner : MonoBehaviour
         {
             for (int i = 0; i < enemyNumber; i++)
             {
-                GameObject enemyType = Instantiate(_enemyPrefabs[prefabN]);
+                GameObject enemyType = Instantiate(_enemyPrefabs[prefabN], GameObject.Find("EnemyBox").transform);
                 //IEnemy enemy = enemyType.GetComponent<IEnemy>();
+
 
                 enemyType.name = $"{enemyName}-{i}";
                 enemyType.tag = "Enemy";
-                enemyType.transform.parent = transform.Find("EnemySpwaner");
 
                 enemyTypeint.Add(enemyType);
 
@@ -141,14 +158,15 @@ public class EnemySpawner : MonoBehaviour
             {
                 // 제거할 요소
                 string name = enemyTypeint[enemyTypeint.Count - 1].name;
+
                 // 리스트 맨 뒤 요소 삭제
-                enemyTypeint.Remove(enemyTypeint[enemyTypeint.Count-1]);
+                enemyTypeint.Remove(enemyTypeint[enemyTypeint.Count - 1]);
                 // 오브젝트 제거
-                GameObject.Destroy(GameObject.Find($"{name}"));
+                GameObject.Destroy(GameObject.Find("EnemyBox").transform.Find($"{name}").gameObject);
 
                 Debug.Log($"{name} 삭제");
             }
-            
+
         }
     }
 
