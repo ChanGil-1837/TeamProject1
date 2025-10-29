@@ -11,7 +11,9 @@ public sealed class BounceWeapon : Weapon
 
     public override void Fire(IEnemy enemy)
     {
-        Vector3 direction = (enemy.Transform.position - transform.position).normalized;
+        if (CheckCondition(enemy) == false) return;
+
+        Vector3 direction = GetDirection(enemy);
 
         Projectile projectile = FireProjectile(direction);
 
@@ -20,6 +22,8 @@ public sealed class BounceWeapon : Weapon
         {
             bounceProjectile.SetBounceCount(maxBounceCount);
         }
+
+        AfterFire();
     }
 
 
