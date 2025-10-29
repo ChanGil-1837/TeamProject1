@@ -45,6 +45,9 @@ namespace TeamProject.GameSystem
         // 2. 게임 웨이브 진행
         public void Update()
         {
+            if (IsGameOver)
+                return;
+
             TickTime();
 
             if (waveRemain < 0.0f)
@@ -64,44 +67,56 @@ namespace TeamProject.GameSystem
             currentWave++;
             // 가능하다면 코루틴으로 서서히 증가되는 것을 UI에 반영해서 시간이 차오르는 것을 표현.
             waveRemain = 30f;
-            enemySpawner.SetWaveLevel(currentWave);
-
-            InterestPayment();
 
             if (enemySpawner != null)
             {
                 enemySpawner.SetWaveLevel(currentWave);
             }
+
+            InterestPayment();
         }
 
+        // 4. 이자 지급
         public void InterestPayment()
         {
-            // 1. 플레이어를 참조해서 현재 돈이 얼마있는지 가져온다.
-            int currentMoney = playerGold;
+            if (player == null)
+                return;
 
-            // 2. 가져온 돈에 이자를 곱해서 얼마를 줘야할지 계산한다.
-            int interest = Mathf.FloorToInt(currentMoney * nowInterest);
+            // 1. 플레이어를 참조해서 현재 돈이 얼마 있는지 가져온다.
+            int currentMoney = player.Gold;
+
+            // 2. 가져온 돈에 이자를 곱해서 얼마를 줘야 할지 계산한다.
+            int interest = (int)(currentMoney * nowInterest);
 
             // 3. 이자 지급을 위해 플레이어의 돈에 이자를 더한다.
-            playerGold += interest;
-
-            Debug.Log($"[이자 지급] Wave {currentWave}: +{interest}G → 총 {playerGold}G");
+            player.AddGold(interest);
         }
 
+        // 5. 이자율 업그레이드
         public void UpgradeInterest()
         {
             nowInterest += 0.1f;
         }
 
-
+        // 6. 적 처치 시 리워드 지급
         public void EnemyKill(IEnemy enemy)
         {
-            // 1. 플레이어를 참조해서 enemy.reward 를 지급
+            if (enemy == null || player == null)
+                return;
+
+            player.AddGold(enemy.Reward);
         }
-        
+
         public void DamagePlayer(IEnemy enemy)
         {
-            //바뀐 사양으로인해 불 필요한 메서드
+            // 바뀐 사양으로인해 불 필요한 메서드
+        }
+
+        public bool IsGameOver { get; private set; }
+
+        public void GameOver()
+        {
+            IsGameOver = true;
         }
     }
 }
