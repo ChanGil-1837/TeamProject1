@@ -76,7 +76,7 @@ public class NormalEnemy : MonoBehaviour, IEnemy
 
         else if (other.tag == "Projectile")
         {
-            other.GetComponent<GameManager>().EnemyKill(gameObject);
+            other.GetComponent<GameManager>().EnemyKill(this);
             Debug.Log($"{gameObject.name} 공격당함.");
 
             // 현재 체력이 0이면 사망처리
