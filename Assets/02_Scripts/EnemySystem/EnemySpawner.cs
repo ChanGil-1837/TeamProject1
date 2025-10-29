@@ -109,7 +109,7 @@ public class EnemySpawner : MonoBehaviour
         float delayTime = _spawnerInterval;
         while (isRunning)
         {
-            //1초대기
+            //대기
             yield return new WaitForSecondsRealtime(_spawnerInterval);
 
 
