@@ -1,244 +1,171 @@
-// =================================================================
-// [GameManagerPrototype.cs]
-// ¸ñÀû : Player, Enemy, UI, Spawner¸¦ ¿¬°áÇØÁÖ´Â Å×½ºÆ®¿ë Çãºê ½ºÅ©¸³Æ®.
-//       - ½ÇÁ¦ °ÔÀÓ ·ÎÁ÷Àº ¾øÀ½. (¿¬°á È®ÀÎ Àü¿ë)
-// »ç¿ë¹ý : 
-//    1) ¾À¿¡ ÀÌ ½ºÅ©¸³Æ®¸¦ ³Ö°í Player, Spawner, UIManager¸¦ ¿¬°á.
-//    2) ¼ýÀÚÅ°(1~5), W, G, O, K ·Î Å×½ºÆ® °¡´É.
-//    3) ¸ðµç ÆÄÆ® ÀÌº¥Æ®°¡ Á¤»ó ¿¬°áµÇ¸é ½ÇÁ¦ GameManager.cs·Î ÀÌÀü.
-// =================================================================
-using System;
+// ===============================
+// GameManagerPrototype.cs (ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½×½ï¿½Æ®ï¿½ï¿½)
+// ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½Ó¿ï¿½ï¿½ï¿½ + ï¿½ï¿½ ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ + ï¿½ï¿½ï¿½ï¿½ ï¿½å¸§ ï¿½ï¿½ï¿½ï¿½
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½(Spawner/UI/Playerï¿½ï¿½ï¿½ï¿½ ï¿½Þ¼ï¿½ï¿½å¡¤ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½/È£ï¿½ï¿½)
+// ===============================
+
 using System.Collections.Generic;
-using UI;
 using UnityEngine;
-using UnityEngine.Pool;
+using UnityEngine.Events;
 
-public enum GameState { Ready, Playing, Paused, GameOver }
-public enum EnemyType { Basic, Fast, Tank }
-
-public class GameManagerPrototype : MonoBehaviour
+namespace TeamProject
 {
-    // ¦¡¦¡ ½Ì±ÛÅæ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-    public static GameManagerPrototype Instance { get; private set; }
-
-    private void Awake()
+    [DefaultExecutionOrder(-100)]
+    public sealed class GameManagerPrototype : MonoBehaviour
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì±ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        public static GameManagerPrototype Instance { get; private set; }
 
-        _enemies = new List<IEnemy>(64);
-        State = GameState.Ready;
-    }
-
-    // ¦¡¦¡ Player ÀÌº¥Æ® ¿¬°á ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-    [SerializeField] private Player _player;
-    public Player Player
-    {
-        get => _player;
-        set
+        private void Awake()
         {
-            if (_player != null) { _player.Damaged -= OnPlayerDamaged; _player.Died -= OnPlayerDied; }
-            _player = value;
-            if (_player != null) { _player.Damaged += OnPlayerDamaged; _player.Died += OnPlayerDied; }
-        }
-    }
-
-    // ¦¡¦¡ Spawner ÀÌº¥Æ® ¿¬°á ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-    [SerializeField] private EnemySpawner _enemySpawner;
-    public EnemySpawner EnemySpawner
-    {
-        get => _enemySpawner;
-        set
-        {
-            if (_enemySpawner != null) _enemySpawner.Spawned -= OnEnemySpawned;
-            _enemySpawner = value;
-            if (_enemySpawner != null) _enemySpawner.Spawned += OnEnemySpawned;
-        }
-    }
-
-    // ¦¡¦¡ »óÅÂ/µ¥ÀÌÅÍ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-    private List<IEnemy> _enemies;
-    public IReadOnlyList<IEnemy> Enemies => _enemies;
-
-    [SerializeField] private int _score;
-    public int Score
-    {
-        get => _score;
-        private set { _score = Mathf.Max(0, value); UIManager.Instance?.UpdateScore(_score); }
-    }
-
-    [SerializeField] private bool _isGameOver;
-    public bool IsGameOver
-    {
-        get => _isGameOver;
-        private set
-        {
-            _isGameOver = value;
-            if (_isGameOver)
+            if (Instance != null && Instance != this)
             {
-                State = GameState.GameOver;
-                EnemySpawner?.Stop();
-                UIManager.Instance?.ShowGameOver();
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            ResetRuntime();
+        }
+
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        [Header("ï¿½Ê±â°ª")]
+        [SerializeField] private int startLife = 3;
+
+        [Header("ï¿½Ìºï¿½Æ® ï¿½ï¿½(ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ ï¿½ï¿½ï¿½ï¿½)")]
+        public UnityEvent<int> OnScoreChanged = new UnityEvent<int>();
+        public UnityEvent<int> OnGoldChanged = new UnityEvent<int>();
+        public UnityEvent<int> OnLifeChanged = new UnityEvent<int>();
+        public UnityEvent<bool> OnGameOver = new UnityEvent<bool>();
+
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        private readonly List<GameObject> _enemies = new List<GameObject>();
+        public IReadOnlyList<GameObject> Enemies => _enemies;
+
+        public int Score { get; private set; }
+        public int Gold { get; private set; }
+        public int Life { get; private set; }
+        public bool IsGameOver { get; private set; }
+
+        private void ResetRuntime()
+        {
+            Score = 0;
+            Gold = 0;
+            Life = Mathf.Max(0, startLife);
+            IsGameOver = false;
+
+            OnScoreChanged?.Invoke(Score);
+            OnGoldChanged?.Invoke(Gold);
+            OnLifeChanged?.Invoke(Life);
+            OnGameOver?.Invoke(IsGameOver);
+
+            Time.timeScale = 1f;
+        }
+
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ API (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+
+        // [Spawner]ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½
+        public void RegisterEnemy(GameObject enemy)
+        {
+            if (enemy == null) return;
+            if (_enemies.Contains(enemy)) return;
+            _enemies.Add(enemy);
+            // ï¿½Ê¿ï¿½ ï¿½ï¿½: Debug.Log($"[GM] Enemy registered: {enemy.name}");
+        }
+
+        // [Enemy]ï¿½ï¿½ ï¿½×°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½(ï¿½Ú±ï¿½ ï¿½Ú½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+        public void UnregisterEnemy(GameObject enemy)
+        {
+            if (enemy == null) return;
+            _enemies.Remove(enemy);
+        }
+
+        // ï¿½ï¿½ï¿½ï¿½ Ã³Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+        public void EnemyKilled(GameObject enemy, int score = 1, int gold = 0)
+        {
+            if (enemy != null) _enemies.Remove(enemy);
+            AddScore(score);
+            AddGold(gold);
+        }
+
+        // [Enemy]ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ã» ï¿½Ý¿ï¿½)
+        public void EnemyHitPlayer(GameObject enemy, int damage = 1)
+        {
+            DamagePlayer(damage);
+            if (enemy != null)
+            {
+                _enemies.Remove(enemy);
+                Destroy(enemy);
             }
         }
-    }
 
-    [SerializeField] private int _waveLevel;
-    public int WaveLevel
-    {
-        get => _waveLevel;
-        private set { _waveLevel = Mathf.Max(0, value); }
-    }
-
-    [SerializeField] private GameState _state = GameState.Ready;
-    public GameState State
-    {
-        get => _state;
-        private set { _state = value; UIManager.Instance?.UpdateState(_state); }
-    }
-
-    private float _timeElapsed;
-    public float TimeElapsed
-    {
-        get => _timeElapsed;
-        private set { _timeElapsed = Mathf.Max(0, value); UIManager.Instance?.UpdateTimer(_timeElapsed); }
-    }
-
-    // ¦¡¦¡ Unity Loop ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-    private void Update()
-    {
-        if (State == GameState.Playing)
-            TimeElapsed += Time.deltaTime;
-
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        HandleTestHotkeys();   // °³¹ß/¿¡µðÅÍ¿¡¼­¸¸ µ¿ÀÛÇÏ´Â Å×½ºÆ® Å°
-#endif
-    }
-
-    // ¦¡¦¡ ¿ÜºÎ °ø°³ API ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-    public void StartGame()
-    {
-        Score = 0;
-        TimeElapsed = 0f;
-        WaveLevel = 1;
-        IsGameOver = false;
-        State = GameState.Playing;
-        EnemySpawner?.Begin(WaveLevel);
-        Debug.Log($"[GM] StartGame  wave={WaveLevel}");
-    }
-
-    public void RequestPause(bool pause)
-    {
-        if (State == GameState.GameOver) return;
-        State = pause ? GameState.Paused : GameState.Playing;
-        if (pause) EnemySpawner?.Stop(); else EnemySpawner?.Begin(WaveLevel);
-        Debug.Log($"[GM] Pause={pause}  state={State}");
-    }
-
-    public void SpawnEnemy(EnemyType type)
-    {
-        if (EnemySpawner == null || State != GameState.Playing) return;
-        var enemy = EnemySpawner.Spawn(type);
-        if (enemy == null) return;
-        RegisterEnemy(enemy);
-        Debug.Log($"[GM] SpawnEnemy type={type} count={Enemies.Count}");
-    }
-
-    public void ClearEnemies()
-    {
-        for (int i = _enemies.Count - 1; i >= 0; --i)
+        public void AddScore(int amount)
         {
-            var e = _enemies[i];
-            if (e == null) { _enemies.RemoveAt(i); continue; }
-
-            // Ç®À» ¾È ¾²¸é Destroy(e.GO); ·Î¸¸ Ã³¸®ÇØµµ µÊ.
-            if (!ObjectPool.TryReturn(e.GO))
-                Destroy(e.GO);
-
-            _enemies.RemoveAt(i);
-        }
-        Debug.Log("[GM] ClearEnemies ¡æ count=0");
-    }
-
-    // ¦¡¦¡ ½ÅÈ£ ¼ö½ÅºÎ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-    private void OnPlayerDamaged(float currentHP)
-    {
-        UIManager.Instance?.UpdateHP(currentHP);
-        Debug.Log($"[GM] PlayerDamaged hp={currentHP}");
-    }
-
-    private void OnPlayerDied()
-    {
-        Debug.Log("[GM] PlayerDied ¡æ GameOver");
-        IsGameOver = true;
-    }
-
-    private void OnEnemySpawned(IEnemy enemy)
-    {
-        if (enemy == null) return;
-        RegisterEnemy(enemy);
-        Debug.Log($"[GM] EnemySpawned ¡æ count={Enemies.Count}");
-    }
-
-    private void OnEnemyKilled(IEnemy enemy, int earnScore)
-    {
-        Score += earnScore;
-        if (enemy != null) _enemies.Remove(enemy);
-        Debug.Log($"[GM] EnemyKilled +{earnScore} score={Score} count={Enemies.Count}");
-    }
-
-    // ¦¡¦¡ ³»ºÎ À¯Æ¿ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-    private void RegisterEnemy(IEnemy enemy)
-    {
-        if (enemy == null) return;
-        enemy.Killed -= OnEnemyKilled; // Áßº¹ ¹æÁö
-        enemy.Killed += OnEnemyKilled;
-        _enemies.Add(enemy);
-    }
-
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-    // ¦¡¦¡ Å×½ºÆ® Å° ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-    // 1: StartGame, 2: Pause, 3: Resume, 4: Spawn Basic, 5: Clear
-    // W: Wave+1 & Begin,   G: °­Á¦ GameOver,  O: Basic 5¸¶¸® ½ºÆù
-    // K: Ã¹ Àû °­Á¦ »ç¸Á(ÇØ´ç IEnemy.Die() ±¸Çö ÇÊ¿ä)
-    private void HandleTestHotkeys()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) StartGame();
-        if (Input.GetKeyDown(KeyCode.Alpha2)) RequestPause(true);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) RequestPause(false);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) SpawnEnemy(EnemyType.Basic);
-        if (Input.GetKeyDown(KeyCode.Alpha5)) ClearEnemies();
-
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            WaveLevel++;
-            if (State == GameState.Playing) EnemySpawner?.Begin(WaveLevel);
-            Debug.Log($"[GM] Wave++ ¡æ {WaveLevel}");
+            if (amount == 0) return;
+            Score += amount;
+            OnScoreChanged?.Invoke(Score);
         }
 
-        if (Input.GetKeyDown(KeyCode.G))
+        // [UI ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]
+        // - ï¿½ï¿½Ã»ï¿½ï¿½: UI ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½È£)
+        // - ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ È¹ï¿½ï¿½/ï¿½ï¿½ï¿½×·ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½É°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        // - Ã³ï¿½ï¿½ ï¿½ï¿½Ä¡: AddGold(), OnGoldChanged ï¿½Ìºï¿½Æ®
+        // - ï¿½ï¿½ï¿½ï¿½: GameManagerPrototypeï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°ï¿½,
+        //         ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UIManagerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å©ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½
+        //         OnGoldChanged.AddListener(...) ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
+
+        public void AddGold(int amount)
         {
-            // ÇÃ·¹ÀÌ¾î ÀÌº¥Æ®¸¦ °ÅÄ¡Áö ¾Ê°í ¹Ù·Î °ÔÀÓ¿À¹ö »óÅÂ ÁøÀÔ(Å×½ºÆ®¿ë)
+            if (amount == 0) return;
+            Gold += amount;
+            OnGoldChanged?.Invoke(Gold);
+        }
+
+        public void DamagePlayer(int damage = 1)
+        {
+            if (IsGameOver) return;
+            Life = Mathf.Max(0, Life - Mathf.Max(0, damage));
+            OnLifeChanged?.Invoke(Life);
+
+            if (Life <= 0) EndGame();
+        }
+
+        public void HealPlayer(int amount = 1)
+        {
+            if (IsGameOver) return;
+            Life = Mathf.Max(0, Life + Mathf.Max(0, amount));
+            OnLifeChanged?.Invoke(Life);
+        }
+
+        public void EndGame()
+        {
+            if (IsGameOver) return;
             IsGameOver = true;
-            Debug.Log("[GM] Force GameOver");
+            Time.timeScale = 0f;            // ï¿½Ê¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            OnGameOver?.Invoke(true);
         }
 
-        if (Input.GetKeyDown(KeyCode.O))
+        public void RestartPrototype()
         {
-            for (int i = 0; i < 5; i++) SpawnEnemy(EnemyType.Basic);
-            Debug.Log("[GM] Spawn x5");
-        }
-
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            if (Enemies.Count > 0)
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¸ï¿½ï¿½: ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½Ê±ï¿½È­
+            foreach (var e in _enemies)
             {
-                // IEnemy°¡ Die() ±¸ÇöµÇ¾î ÀÖ°í ³»ºÎ¿¡¼­ Killed ÀÌº¥Æ®¸¦ ¹ß»ý½ÃÅ²´Ù´Â ÀüÁ¦
-                Enemies[0].Die();
-                Debug.Log("[GM] Force kill first enemy");
+                if (e != null) Destroy(e);
             }
+            _enemies.Clear();
+            ResetRuntime();
         }
-    }
+
+#if UNITY_EDITOR
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Å°(ï¿½×½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½)
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F1)) AddScore(1);
+            if (Input.GetKeyDown(KeyCode.F2)) AddGold(1);
+            if (Input.GetKeyDown(KeyCode.F3)) DamagePlayer(1);
+            if (Input.GetKeyDown(KeyCode.F5)) RestartPrototype();
+        }
 #endif
+    }
 }
