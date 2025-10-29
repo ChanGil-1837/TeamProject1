@@ -46,7 +46,7 @@ public abstract class Weapon : MonoBehaviour
     private WaitUntil fireState;
     private bool canFire;
 
-    protected Player player;
+    protected Player.Player player;
 
 
 
@@ -57,7 +57,7 @@ public abstract class Weapon : MonoBehaviour
 
     private void Init()
     {
-        player = GetComponentInParent<Player>();
+        player = GetComponentInParent<Player.Player>();
 
         fireState = new WaitUntil(() => canFire);
         attackInterval = new WaitForSeconds(interval);
