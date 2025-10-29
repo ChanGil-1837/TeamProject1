@@ -5,6 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using JHJ;
+using TeamProject.GameSystem;
 
 public class NormalEnemy : MonoBehaviour, IEnemy
 {
