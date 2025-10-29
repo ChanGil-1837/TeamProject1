@@ -42,8 +42,6 @@ public abstract class Weapon : MonoBehaviour
 
     private Queue<Projectile> projectilePool = new();
 
-    protected JHJ.Player player;
-
     protected bool canFire;
     protected float intervalTimer;
 
@@ -57,8 +55,6 @@ public abstract class Weapon : MonoBehaviour
 
     private void Init()
     {
-        player = GetComponentInParent<JHJ.Player>();
-
         for (int i = 0; i < poolSize; i++)
         {
             Projectile projectile = NewProjectile();
@@ -148,6 +144,8 @@ public abstract class Weapon : MonoBehaviour
         baseDirection.y = 0f;
 
         Vector3 direction = baseDirection.normalized;
+
+        if (direction == Vector3.zero) direction = Vector3.forward;
 
         return direction;
     }
