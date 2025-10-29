@@ -14,31 +14,41 @@ public abstract class Weapon : MonoBehaviour
 {
     public WeaponType weaponType;
 
-    [Header("Damage")]
-    [SerializeField] private int damage;
+    [Space]
+    [SerializeField] private int damage = 1;
 
-    [Header("Interval")]
-    [SerializeField] private float baseInterval;
+    [Space]
+    [SerializeField] private float velocity = 5;
 
-    [Header("Level")]
-    [SerializeField] private int level;
+    [Space]
+    [SerializeField] private float interval = 0.5f;
 
-    [Header("Prefab")]
+    [Space]
+    [SerializeField] private int poolSize = 30;
+
+    [Space]
     [SerializeField] private Projectile projectilePrefab;
 
-    [Header("Pool")]
-    [SerializeField] private int poolSize;
 
     public int Damage => damage;
+    public float Velocity => velocity;
+    public int DamageLevel => damageLevel;
+    public int IntervalLevel => intervalLevel;
+
+
+    private int damageLevel;
+    private int intervalLevel;
+
 
     private Queue<Projectile> projectilePool = new();
     private Coroutine attackCoroutine;
     private WaitForSeconds attackInterval;
     private WaitUntil fireState;
-
-    // Test
-    [SerializeField] protected Transform target;
     private bool canFire;
+
+    protected Player player;
+
+
 
     private void Awake()
     {
@@ -47,8 +57,10 @@ public abstract class Weapon : MonoBehaviour
 
     private void Init()
     {
+        player = GetComponentInParent<Player>();
+
         fireState = new WaitUntil(() => canFire);
-        attackInterval = new WaitForSeconds(baseInterval);
+        attackInterval = new WaitForSeconds(interval);
 
         attackCoroutine = StartCoroutine(Attack());
 
@@ -131,7 +143,7 @@ public abstract class Weapon : MonoBehaviour
 
     #region Attack
 
-    public abstract void Fire();
+    public abstract void Fire(IEnemy enemy);
 
     IEnumerator Attack()
     {
@@ -139,7 +151,12 @@ public abstract class Weapon : MonoBehaviour
         {
             yield return fireState;
 
-            Fire();
+            IEnemy enemy = player.ClosestEnemy;
+
+            if(enemy != null)
+            {
+                Fire(enemy);
+            }
 
             yield return attackInterval;
         }
@@ -153,24 +170,46 @@ public abstract class Weapon : MonoBehaviour
     public virtual void UpgradeDamage(int upgradeAmount)
     {
         damage += upgradeAmount;
-    }
-    public virtual void UpgradeFireRate(float fireRateMultiplier)
-    {
-        baseInterval *= fireRateMultiplier;
-        attackInterval = new WaitForSeconds(baseInterval);
+        damageLevel++;
     }
 
+    public virtual void UpgradeFireRate(float fireRateMultiplier)
+    {
+        interval *= fireRateMultiplier;
+        attackInterval = new WaitForSeconds(interval);
+        intervalLevel++;
+    }
+
+
+
     #endregion
+
 
     //---------------------------------------------------
 
 
+    protected Projectile FireProjectile(Vector3 direction)
+    {
+        Projectile projectile = GetFromPool();
+
+        SetProjectileTransform(projectile, direction);
+
+        return projectile;
+    }
+
+
     // Set Projectile Active Transform 
-    protected void SetProjectileTransform(Projectile projectile, Vector3 direction)
+    private void SetProjectileTransform(Projectile projectile, Vector3 direction)
     {
         projectile.transform.position = transform.position;
         projectile.transform.rotation = Quaternion.LookRotation(direction);
-        projectile.SetDirection(direction);
+        projectile.SetVelocity(direction);
+    }
+
+
+    public void ChangeFireState()
+    {
+        canFire = !canFire;
     }
 
 }

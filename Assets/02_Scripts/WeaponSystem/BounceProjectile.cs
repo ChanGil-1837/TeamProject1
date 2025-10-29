@@ -27,7 +27,7 @@ public sealed class BounceProjectile : Projectile
 
             if (currentBounce > 0)
             {
-                ApplyRandomBounce();
+                RandomBounce();
             }
             else
             {
@@ -36,7 +36,7 @@ public sealed class BounceProjectile : Projectile
         }
     }
 
-    private void ApplyRandomBounce()
+    private void RandomBounce()
     {
         // 원 내부 랜덤 벡터 생성
         Vector2 randomCircle = Random.insideUnitCircle.normalized;
@@ -48,6 +48,6 @@ public sealed class BounceProjectile : Projectile
         transform.rotation = Quaternion.LookRotation(randomDirection);
 
         // 새로운 방향 설정
-        SetDirection(randomDirection);
+        SetVelocity(randomDirection);
     }
 }

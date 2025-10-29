@@ -2,12 +2,10 @@ using UnityEngine;
 
 public sealed class NormalWeapon : Weapon
 {
-    public override void Fire()
+    public override void Fire(IEnemy enemy)
     {
-        Projectile projectile = GetFromPool();
+        Vector3 direction = (enemy.Transform.position - transform.position).normalized;
 
-        Vector3 direction = (target.position - transform.position).normalized;
-
-        SetProjectileTransform(projectile, direction);
+        FireProjectile(direction);
     }
 }

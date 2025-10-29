@@ -4225,6 +4225,58 @@ MonoBehaviour:
   _plusHP: 0
   _plusMoveSpeed: 0
   _plusDamage: 0
+--- !u!1 &806210230
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 806210232}
+  - component: {fileID: 806210231}
+  m_Layer: 0
+  m_Name: Player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &806210231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 806210230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80e668ffb2515604e8e7565ed28baf87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _baseMaxHp: 100
+  _baseHpRegen: 0.1
+  _baseDef: 0
+  _detectRange: 5
+  _gold: 0
+  _detectCollider: {fileID: 0}
+  _weapons: []
+--- !u!4 &806210232
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 806210230}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1085179638}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &813010999
 GameObject:
   m_ObjectHideFlags: 0
@@ -4877,13 +4929,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1085179636}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 59752331}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 806210232}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1085179640
 MonoBehaviour:
@@ -4899,11 +4951,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponType: 0
   damage: 1
-  baseInterval: 0.5
-  level: 1
+  velocity: 5
+  interval: 0.5
+  poolSize: 30
   projectilePrefab: {fileID: -5130536287329203387, guid: dabe5a36fad9b48efa20183348702637, type: 3}
-  poolSize: 15
-  target: {fileID: 182606814}
   maxBounceCount: 3
 --- !u!114 &1085179641
 MonoBehaviour:
@@ -4912,18 +4963,17 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1085179636}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 25016e33750f9bc49a3fc87f13f0525b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weaponType: 0
-  damage: 0
-  baseInterval: 0.75
-  level: 1
-  projectilePrefab: {fileID: 7393619373236079972, guid: be4ef1e78e739274b9ed9840318a35bd, type: 3}
+  damage: 1
+  velocity: 5
+  interval: 0.5
   poolSize: 30
-  target: {fileID: 182606814}
+  projectilePrefab: {fileID: 7393619373236079972, guid: be4ef1e78e739274b9ed9840318a35bd, type: 3}
   shotCount: 3
   totalAngle: 45
 --- !u!114 &1085179642
@@ -4939,12 +4989,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponType: 0
-  damage: 0
-  baseInterval: 0.3
-  level: 1
+  damage: 1
+  velocity: 5
+  interval: 0.5
+  poolSize: 30
   projectilePrefab: {fileID: 7393619373236079972, guid: be4ef1e78e739274b9ed9840318a35bd, type: 3}
-  poolSize: 10
-  target: {fileID: 182606814}
 --- !u!1 &1161478279
 GameObject:
   m_ObjectHideFlags: 0
@@ -7322,6 +7371,6 @@ SceneRoots:
   - {fileID: 184378675}
   - {fileID: 1279883114}
   - {fileID: 1282476441}
-  - {fileID: 1085179638}
   - {fileID: 1369138006}
   - {fileID: 182606814}
+  - {fileID: 806210232}
