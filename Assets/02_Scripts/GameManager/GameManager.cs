@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JHJ;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -31,6 +32,8 @@ namespace TeamProject.GameSystem
 
         public float nowInterest = 0.0f;
         public int playerGold = 0;
+
+        public Player player;
 
         // 1. 게임 시작 
         public void GameStart()
@@ -90,5 +93,15 @@ namespace TeamProject.GameSystem
             nowInterest += 0.1f;
         }
 
+
+        public void EnemyKill(IEnemy enemy)
+        {
+            // 1. 플레이어를 참조해서 enemy.reward 를 지급
+        }
+        
+        public void DamagePlayer(IEnemy enemy)
+        {
+            //바뀐 사양으로인해 불 필요한 메서드
+        }
     }
 }
