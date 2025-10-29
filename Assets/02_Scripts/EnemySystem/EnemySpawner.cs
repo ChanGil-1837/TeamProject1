@@ -77,7 +77,7 @@ public class EnemySpawner : MonoBehaviour
     private void Awake()
     {
         GameObject EnemyBox = new GameObject("EnemyBox");
-        
+
 
         CreateEnemy(normalEnemies, _normalEnemyNumber, "Normal", 0);
         CreateEnemy(tankEnemies, _tankEnemyNumber, "Tank", 1);
@@ -111,7 +111,7 @@ public class EnemySpawner : MonoBehaviour
         {
             //1초대기
             yield return new WaitForSecondsRealtime(_spawnerInterval);
-            
+
 
             //if (Input.GetMouseButtonDown(0)) // 웨이브가 시작되면 활성화 되는 조건
             {
@@ -161,15 +161,15 @@ public class EnemySpawner : MonoBehaviour
         }
         foreach (var enemy in tankEnemies)
         {
-            enemy.GetComponent<NormalEnemy>().SetWaveLevel(wave);
+            enemy.GetComponent<TankEnemy>().SetWaveLevel(wave);
         }
         foreach (var enemy in speedEnemies)
         {
-            enemy.GetComponent<NormalEnemy>().SetWaveLevel(wave);
+            enemy.GetComponent<SpeedEnemy>().SetWaveLevel(wave);
         }
         foreach (var enemy in bossEnemies)
         {
-            enemy.GetComponent<NormalEnemy>().SetWaveLevel(wave);
+            enemy.GetComponent<BossEnemy>().SetWaveLevel(wave);
         }
     }
 

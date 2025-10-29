@@ -1,7 +1,11 @@
+using System;
 using DG.Tweening.Core.Easing;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using JHJ;
+using TeamProject.GameSystem;
 
 public class SpeedEnemy : MonoBehaviour, IEnemy
 {
@@ -73,7 +77,7 @@ public class SpeedEnemy : MonoBehaviour, IEnemy
 
         else if (other.tag == "Projectile")
         {
-            other.GetComponent<GameManager>().EnemyKill(gameObject);
+            other.GetComponent<GameManager>().EnemyKill(this);
             Debug.Log($"{gameObject.name} 공격당함.");
 
             // 현재 체력이 0이면 사망처리
