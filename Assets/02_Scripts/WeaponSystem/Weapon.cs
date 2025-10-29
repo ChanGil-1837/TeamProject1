@@ -40,7 +40,7 @@ public abstract class Weapon : MonoBehaviour
     private int intervalLevel;
 
 
-    private Queue<Projectile> projectilePool = new();
+    private Queue<Projectile> projectilePool;
 
     protected bool canFire;
     protected float intervalTimer;
@@ -55,6 +55,8 @@ public abstract class Weapon : MonoBehaviour
 
     private void Init()
     {
+        projectilePool = new(poolSize);
+
         for (int i = 0; i < poolSize; i++)
         {
             Projectile projectile = NewProjectile();
