@@ -71,7 +71,7 @@ public class TankEnemy : MonoBehaviour, IEnemy
         if (other.tag == "Player")
         {
             Debug.Log($"{gameObject.name} 접촉함.");
-            other.GetComponent<Player>().TakeDamage(damage);
+            other.GetComponentInParent<Player>().TakeDamage(damage);
 
             EnemyDie();
         }
