@@ -4,25 +4,39 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("적 프리팹")]
+    [Header("적 프리팹 리스트")]
     [SerializeField] private List<GameObject> _enemyPrefabs;// 프리팹
 
-    [Header("Normal 적 생성")]
+    [Header("적 생성(개수)")]
     [SerializeField] private int _normalEnemyNumber;
-
-    [Header("Tank 적 생성")]
     [SerializeField] private int _tankEnemyNumber;
-
-    [Header("Speed 적 생성")]
     [SerializeField] private int _speedEnemyNumber;
-
-    [Header("Boss 적 생성")]
     [SerializeField] private int _bossEnemyNumber;
 
-    [Header("적 생성 거리")]
+    [Header("적 스폰 거리(플레이어 기준)")]
     [SerializeField] private float _attackRange = 10f;
-    //private float _spawnerInterval = 1.0f; // 적 생성주기	
 
+    [Header("적 생성 주기")]
+    [SerializeField] private float _spawnerInterval = 1.0f; // 적 생성주기
+                                                            //
+                                                            // [Header("기본 최대 체력")]
+    [Header("적 기본정보")]
+    [SerializeField] private float _maxHP = 10; // 최대
+    [SerializeField] private float _moveSpeed = 1; // 이동 속도
+    [SerializeField] private float _damage = 10; // 공격력
+    [SerializeField] private float _reward; // 보상
+
+    [Header("증가량(test용))")]
+    [SerializeField] private float _plus = 0.5f; // 증가량	
+
+
+    #region 프로퍼티
+    public float MaxHP { get { return _maxHP; } }
+    public float MoveSpeed { get { return _moveSpeed; } }
+    public float Damage { get { return _damage; } }
+    public float Plus { get { return _plus; } }
+    public float Reward { get { return _reward; } }
+    #endregion
 
 
     private List<Transform> spawnPoints; // 스폰 포인트	
@@ -42,6 +56,11 @@ public class EnemySpawner : MonoBehaviour
     //리스트 번호
     private int ListN = 0;
 
+    //게임 실행 상태
+    bool isRunning = true;
+    // 코루틴 저장 변수
+    Coroutine activeCoroutine;
+
     //public struct EnemyData
     //{
     //    public GameObject gameOJ;
@@ -58,6 +77,7 @@ public class EnemySpawner : MonoBehaviour
     private void Awake()
     {
         GameObject EnemyBox = new GameObject("EnemyBox");
+        
 
         CreateEnemy(normalEnemies, _normalEnemyNumber, "Normal", 0);
         CreateEnemy(tankEnemies, _tankEnemyNumber, "Tank", 1);
@@ -67,51 +87,92 @@ public class EnemySpawner : MonoBehaviour
         ShuffleList();
     }
 
+    private void Start()
+    {
+        activeCoroutine = StartCoroutine(SpawnEnemy());
+    }
+
     // 타이머 갱신
     private void Update()
     {
-        SpawnEnemy();
+        if (Input.GetMouseButtonDown(1)) // 웨이브가 종료되면 모두 비활 성화 + 코루틴 종료
+        {
+            StopCoroutine(activeCoroutine);
+            Debug.Log($"웨이브 종료. enemy 생성 중지됨");
+        }
         //ClearEnemies();
     }
 
     // 적 소환
-    private void SpawnEnemy()
+    IEnumerator SpawnEnemy()
     {
-        if (Input.GetMouseButtonDown(0)) //추후에 웨이브 기준으로 변경
+        float delayTime = _spawnerInterval;
+        while (isRunning)
         {
-            if (enemyTurn < activeEnemies.Count)
-            {
-                // 비활성화된 상태에서만 위치 부여 + 활성화
-                while (activeEnemies[enemyTurn].activeSelf == false)
-                {
-                    // 반지름 길이 = 사정거리 에서 몹 스폰
-                    Vector3 direction = GameObject.Find("Player").transform.position + (Random.insideUnitSphere * _attackRange);
-                    direction.y = 0;
+            //1초대기
+            yield return new WaitForSecondsRealtime(_spawnerInterval);
+            
 
-                    // 랜덤 위치가 유효한 거리인지
-                    if (direction.magnitude >= _attackRange - 1)
+            //if (Input.GetMouseButtonDown(0)) // 웨이브가 시작되면 활성화 되는 조건
+            {
+                // 적 활성화 코드
+                if (enemyTurn < activeEnemies.Count)
+                {
+                    // 비활성화된 상태에서만 위치 부여 + 활성화
+                    while (activeEnemies[enemyTurn].activeSelf == false)
                     {
-                        activeEnemies[enemyTurn].transform.position = direction;
-                        activeEnemies[enemyTurn].SetActive(true);
-                        enemyTurn++;
-                        Debug.Log($"{enemyTurn}번 적 활성화");
-                        break;
+                        // 반지름 길이 = 사정거리 에서 몹 스폰
+                        Vector3 direction = GameObject.Find("Player").transform.position + (Random.insideUnitSphere * _attackRange);
+                        direction.y = 0;
+
+                        // 랜덤 위치가 유효한 거리인지
+                        if (direction.magnitude >= _attackRange - 1)
+                        {
+                            activeEnemies[enemyTurn].transform.position = direction;
+                            activeEnemies[enemyTurn].SetActive(true);
+                            enemyTurn++;
+                            Debug.Log($"{enemyTurn}번 적 활성화");
+                            break;
+                        }
                     }
                 }
+                // 리스트의 끝 번호까지 가면 반복
+                else if (activeEnemies.Count == enemyTurn)
+                {
+                    enemyTurn = 0;
+                }
+
             }
-            else if (activeEnemies.Count == enemyTurn)
-            {
-                enemyTurn = 0;
-            }
-            else
-            {
-                Debug.Log($"전부 소환함");
-            }
+            Debug.Log($"{delayTime++}초 대기");
         }
-        
+
     }
-       
-    
+
+
+
+
+    // 웨이브 레벨에 따른 적 능력치 처리
+    public void SetWaveLevel(int wave)
+    {
+        //리스트에 존재하는 오브젝트의 수치를 변경
+        foreach (var enemy in normalEnemies)
+        {
+            enemy.GetComponent<NormalEnemy>().SetWaveLevel(wave);
+        }
+        foreach (var enemy in tankEnemies)
+        {
+            enemy.GetComponent<NormalEnemy>().SetWaveLevel(wave);
+        }
+        foreach (var enemy in speedEnemies)
+        {
+            enemy.GetComponent<NormalEnemy>().SetWaveLevel(wave);
+        }
+        foreach (var enemy in bossEnemies)
+        {
+            enemy.GetComponent<NormalEnemy>().SetWaveLevel(wave);
+        }
+    }
+
 
     // 웨이브 종료시 삭제	
     //private void ClearEnemies()
@@ -127,7 +188,7 @@ public class EnemySpawner : MonoBehaviour
 
 
     // 오브젝트 이름 중복을 피하기 위해 부여
-    private int EnemyNameID (List<GameObject> enemyTypeint)
+    private int EnemyNameID(List<GameObject> enemyTypeint)
     {
         int IDN = 0;
         if (enemyTypeint == normalEnemies)

@@ -1,4 +1,6 @@
+
 using System;
+using DG.Tweening.Core.Easing;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -6,30 +8,22 @@ using UnityEngine;
 
 public class NormalEnemy : MonoBehaviour, IEnemy
 {
-    [Header("기본 최대 체력")]
-    [SerializeField] private float maxHP = 10; // 최대
+    //NormalEnemy
+    [SerializeField] private GameObject EnemySpawnerObject;
 
-    [Header("기본 현재 체력")]
-    [SerializeField] private float currentHP; // 현재
-
-    [Header("기본 이동속도")]
-    [SerializeField] private float moveSpeed = 1; // 이동 속도
-
-    [Header("기본 공격력")]
-    [SerializeField] private float damage = 10; // 공격력
-
-    [Header("체력 증가량(test용))")]
-    [SerializeField] private float _plusHP; // 최대 체력 
-
-    [Header("이동속도 증가량(test용)")]
-    [SerializeField] private float _plusMoveSpeed; // 이동속도
-
-    [Header("공격력 증가량(test용)")]
-    [SerializeField] private float _plusDamage; // 공격력
+    private float maxHP; // 최대
+    private float currentHP; // 현재
+    private float moveSpeed; // 이동 속도
+    private float damage; // 공격력
+    private float plus; // 증가량
 
     private float reward; // 보상
 
     public bool IsDead { get; set; }
+    public float Reward { get { return reward; } }
+
+
+
     public Transform Transform { get { return transform; } }
 
     private void Start()
@@ -45,12 +39,12 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     // 초기화
     public void Init()
     {
-        // 웨이브에 따라 증가되는 수치만큼 반영
-        maxHP = maxHP + _plusHP;
-        moveSpeed = moveSpeed + _plusMoveSpeed;
-        damage = damage + _plusDamage;
-
+        maxHP = EnemySpawnerObject.GetComponent<EnemySpawner>().MaxHP;
         currentHP = maxHP;
+        moveSpeed = EnemySpawnerObject.GetComponent<EnemySpawner>().MoveSpeed;
+        damage = EnemySpawnerObject.GetComponent<EnemySpawner>().Damage;
+        reward = EnemySpawnerObject.GetComponent<EnemySpawner>().Reward;
+        plus = EnemySpawnerObject.GetComponent<EnemySpawner>().Plus;
     }
 
     // 플레이어로 이동
@@ -74,14 +68,16 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     {
         if (other.tag == "Player")
         {
-            Debug.Log($"{gameObject.name} 접촉!");
-            //GameObject.Find("Player").GetComponent<Player>().Gold += _reward;
+            Debug.Log($"{gameObject.name} 접촉함.");
+            other.GetComponent<Player>().TakeDamage(damage);
+
             EnemyDie();
         }
 
         else if (other.tag == "Projectile")
         {
-            Debug.Log($"{gameObject.name} 접촉!");
+            other.GetComponent<GameManager>().EnemyKill(gameObject);
+            Debug.Log($"{gameObject.name} 공격당함.");
 
             // 현재 체력이 0이면 사망처리
             if (currentHP <= 0)
@@ -102,7 +98,17 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     {
         gameObject.SetActive(false);
         IsDead = true;
-        Debug.Log("Enemy 비활성화");
+        Debug.Log($"{gameObject.name} 비활성화");
+    }
+
+    // internal : 같은 assembly 에서만 public으로 접근 가능
+    // 웨이브 증가 시, 강화됨
+    internal void SetWaveLevel(int level)
+    {
+        // 레벨의 0.5배 증가
+        maxHP = maxHP + plus * level;
+        damage = damage + plus * level;
+        moveSpeed = moveSpeed + plus * level;
     }
 
     internal void SetWaveLevel(int level)

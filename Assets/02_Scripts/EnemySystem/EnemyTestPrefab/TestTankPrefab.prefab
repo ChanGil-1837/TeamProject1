@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 9080874883577461133}
   - component: {fileID: 2913875886561043580}
   - component: {fileID: 7000463930253165474}
-  - component: {fileID: 316716892717734457}
+  - component: {fileID: -8919272499758623918}
   m_Layer: 0
   m_Name: TestTankPrefab
   m_TagString: Enemy
@@ -106,7 +106,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &316716892717734457
+--- !u!114 &-8919272499758623918
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -118,3 +118,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55e5fe97a22eb304aa17391a189a43d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EnemySpawnerObject: {fileID: 4535741687177326043, guid: 217ce0765274b414ba6a2807d9a8724d, type: 3}
