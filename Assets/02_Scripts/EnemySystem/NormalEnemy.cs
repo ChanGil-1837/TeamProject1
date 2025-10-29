@@ -5,6 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using JHJ;
+using TeamProject.GameSystem;
 
 public class NormalEnemy : MonoBehaviour, IEnemy
 {
@@ -109,11 +111,5 @@ public class NormalEnemy : MonoBehaviour, IEnemy
         maxHP = maxHP + plus * level;
         damage = damage + plus * level;
         moveSpeed = moveSpeed + plus * level;
-    }
-
-    internal void SetWaveLevel(int level)
-    {
-        maxHP = maxHP * 1.05f * level;
-        damage = damage * 1.05f * level;
     }
 }
