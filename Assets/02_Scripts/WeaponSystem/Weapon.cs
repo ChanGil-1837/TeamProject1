@@ -18,7 +18,7 @@ public abstract class Weapon : MonoBehaviour
     [SerializeField] private int damage = 1;
 
     [Space]
-    [SerializeField] private float speed = 5;
+    [SerializeField] private float speed = 5f;
 
     [Space]
     [SerializeField] private float interval = 0.5f;
@@ -41,12 +41,12 @@ public abstract class Weapon : MonoBehaviour
 
 
     private Queue<Projectile> projectilePool = new();
-    private Coroutine attackCoroutine;
-    private WaitForSeconds attackInterval;
-    private WaitUntil fireState;
-    private bool canFire;
 
     protected JHJ.Player player;
+
+    protected bool canFire;
+    protected float intervalTimer;
+
 
 
 
@@ -59,11 +59,6 @@ public abstract class Weapon : MonoBehaviour
     {
         player = GetComponentInParent<JHJ.Player>();
 
-        fireState = new WaitUntil(() => canFire);
-        attackInterval = new WaitForSeconds(interval);
-
-        attackCoroutine = StartCoroutine(Attack());
-
         for (int i = 0; i < poolSize; i++)
         {
             Projectile projectile = NewProjectile();
@@ -73,37 +68,23 @@ public abstract class Weapon : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            canFire = !canFire;
-        }
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            UpgradeFireRate(1.1f);
-        }
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            UpgradeFireRate(0.9f);
-        }
-    }
+        if (canFire == true) return;
 
-    private void OnDisable()
-    {
-        canFire = false;
-    }
-    private void OnDestroy()
-    {
-        if(attackCoroutine != null)
+        if(intervalTimer < interval)
         {
-            StopCoroutine(attackCoroutine);
-            attackCoroutine = null;
+            intervalTimer += Time.deltaTime;
+
+            if (intervalTimer >= interval)
+            {
+                canFire = true;
+            }
         }
     }
-
 
     //---------------------------------------------------
 
     #region Pooling
+
 
     private Projectile NewProjectile()
     {
@@ -137,35 +118,54 @@ public abstract class Weapon : MonoBehaviour
         projectile.gameObject.SetActive(false);
 
     }
+
+
     #endregion
 
     //---------------------------------------------------
 
     #region Attack
 
+
+    // 발사
     public abstract void Fire(IEnemy enemy);
 
-    IEnumerator Attack()
+
+    // 조건 체크
+    protected bool CheckCondition(IEnemy enemy)
     {
-        while (true)
-        {
-            yield return fireState;
+        if (enemy == null) return false;
+        if (canFire == false) return false;
 
-            // IEnemy enemy = player;
-
-            // if(enemy != null)
-            // {
-            //     Fire(enemy);
-            // }
-
-            yield return attackInterval;
-        }
+        return true;
     }
+
+    // 방향 계산
+    protected Vector3 GetDirection(IEnemy enemy)
+    {
+        Vector3 baseDirection = enemy.Transform.position - transform.position;
+
+        baseDirection.y = 0f;
+
+        Vector3 direction = baseDirection.normalized;
+
+        return direction;
+    }
+
+    // 발사 후 정리
+    protected void AfterFire()
+    {
+        canFire = false;
+        intervalTimer = 0f;
+    }
+
+
     #endregion
 
     //---------------------------------------------------
 
     #region Upgrade
+
 
     public virtual void UpgradeDamage(int upgradeAmount)
     {
@@ -176,14 +176,11 @@ public abstract class Weapon : MonoBehaviour
     public virtual void UpgradeFireRate(float fireRateMultiplier)
     {
         interval *= fireRateMultiplier;
-        attackInterval = new WaitForSeconds(interval);
         intervalLevel++;
     }
 
 
-
     #endregion
-
 
     //---------------------------------------------------
 
@@ -204,12 +201,6 @@ public abstract class Weapon : MonoBehaviour
         projectile.transform.position = transform.position;
         projectile.transform.rotation = Quaternion.LookRotation(direction);
         projectile.SetVelocity(direction);
-    }
-
-
-    public void ChangeFireState()
-    {
-        canFire = !canFire;
     }
 
 }

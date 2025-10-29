@@ -12,35 +12,39 @@ public sealed class MultiWeapon : Weapon
 
     public override void Fire(IEnemy enemy)
     {
-        // 가까운 적 방향
-        Vector3 baseDirection = (enemy.Transform.position - transform.position).normalized;
+        if (CheckCondition(enemy) == false) return;
+
+        Vector3 baseDirection = GetDirection(enemy);
 
         // 1발 이하 안전장치
-        if(shotCount <= 1)
+        if (shotCount <= 1)
         {
             FireProjectile(baseDirection);
             return;
         }
 
-        // 총 각도 왼쪽부터
+        // 각도 왼쪽부터
         float startAngle = -totalAngle / 2f;
 
         // 투사체 간 간격
         float angleStep = 0f;
         
-        // 간격 : 투사체 개수 - 1 (간격의 수)
+        // 간격 계산 
         angleStep = totalAngle / (shotCount - 1);
         
         for (int i = 0; i < shotCount; i++)
         {
-            // 현재 투사체의 최종 각도 계산
+            // 최종 각도 계산
             float finalAngle = startAngle + (angleStep * i);
 
             Quaternion rotation = Quaternion.AngleAxis(finalAngle, Vector3.up);
+
             Vector3 direction = rotation * baseDirection;
 
             FireProjectile(direction);
         }
+
+        AfterFire();
     }
 
     // 투사체 추가 업그레이드
