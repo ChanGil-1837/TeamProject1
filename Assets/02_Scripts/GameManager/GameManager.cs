@@ -104,7 +104,8 @@ namespace TeamProject.GameSystem
             if (enemy == null || player == null)
                 return;
 
-            player.AddGold(enemy.Reward);
+            int reward = (int)enemy.Reward;  // 리워드를 int형으로 변환
+            player.AddGold(reward);
         }
 
         public void DamagePlayer(IEnemy enemy)
