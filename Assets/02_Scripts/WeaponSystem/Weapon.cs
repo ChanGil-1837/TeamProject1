@@ -18,7 +18,7 @@ public abstract class Weapon : MonoBehaviour
     [SerializeField] private int damage = 1;
 
     [Space]
-    [SerializeField] private float velocity = 5;
+    [SerializeField] private float speed = 5;
 
     [Space]
     [SerializeField] private float interval = 0.5f;
@@ -31,11 +31,11 @@ public abstract class Weapon : MonoBehaviour
 
 
     public int Damage => damage;
-    public float Velocity => velocity;
+    public float Speed => speed;
     public int DamageLevel => damageLevel;
     public int IntervalLevel => intervalLevel;
 
-
+    // Level
     private int damageLevel;
     private int intervalLevel;
 

@@ -50,7 +50,7 @@ public class Projectile : MonoBehaviour
     {
         if (dir.magnitude > 0)
         {
-            rigid.velocity = dir * weapon.Velocity;
+            rigid.velocity = dir * weapon.Speed;
         }
     }
 
