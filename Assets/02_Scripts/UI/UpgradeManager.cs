@@ -36,7 +36,7 @@ namespace UI
     public class UpgradeManager : MonoBehaviour
     {
         public static UpgradeManager Instance { get; private set; }
-        [SerializeField] private Player.Player player;
+        [SerializeField] private JHJ.Player player;
         [SerializeField] private NormalWeapon normalWeapon;
         [SerializeField] private MultiWeapon multiWeapon;
         [SerializeField] private BounceWeapon bounceWeapon;

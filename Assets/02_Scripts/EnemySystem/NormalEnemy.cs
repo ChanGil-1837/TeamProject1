@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -102,5 +103,11 @@ public class NormalEnemy : MonoBehaviour, IEnemy
         gameObject.SetActive(false);
         IsDead = true;
         Debug.Log("Enemy 비활성화");
+    }
+
+    internal void SetWaveLevel(int level)
+    {
+        maxHP = maxHP * 1.05f * level;
+        damage = damage * 1.05f * level;
     }
 }

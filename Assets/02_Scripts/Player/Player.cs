@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using TeamProject.GameSystem; //아마도 게임매니저쪽 네임스페이스
 using UnityEngine;
-namespace Player
+
+namespace JHJ
 {
     public class Player : MonoBehaviour
     {
@@ -27,23 +28,11 @@ namespace Player
         //[Header("Enemy Spawn Data")]
         //[SerializeField] private EnemySpawner _enemySpawner;//인스펙터로 연결해서 리스트받을까함(보류)
 
-        //딕셔너리로 비용, 능력치 상승 관리
-        // [Header("Upgrade Data")]
-        // private readonly Dictionary<UpgradeType, (int cost, float value)> _upgradeValue = new Dictionary<UpgradeType, (int cost, float value)>
-        // {
-        //     { UpgradeType.MaxHp, (100, 10f) }, //비용, 상승치
-        //     { UpgradeType.HpRegen, (120, 0.1f) },
-        //     { UpgradeType.DetectRange, (200, 0.5f) },
-        //     { UpgradeType.Defense, (150, 0.5f) }
-        // };
-        // private const float CostMultiplier = 1.2f; //비용 비율 20퍼
         private const float RegenInterval = 1f; //1초마다 회복
-
-
         private float _regenTimer = 0f; //재생 누적용 타이머
         private float _scanInterval = 0.1f;  //0.1초마다 탐색(0.5초는 반응이 늦음)
         private float _scanTimer = 0f; //스캔 누적용타이머
-        private IEnemy _closestEnemy; //탐지된 가장 가까운 적(무기가 받을수있도록)
+        private List<IEnemy> _detectedEnemies = new List<IEnemy>(); //탐지된 적 리스트
 
 
         //읽기전용 프로퍼티 아직은 어떻게 돌아갈지 몰라서 대충 지정해 둠
@@ -54,8 +43,7 @@ namespace Player
         public float Defense => _baseDef;
         public int Gold => _gold;
         public bool IsDead => _isDead;
-        public IEnemy ClosestEnemy => _closestEnemy;//적위치 프로퍼티로 열람
-
+        public List<IEnemy> DetectedEnemies => _detectedEnemies;//적위치 프로퍼티로 열람
 
         public event Action OnStatsChanged; //스텟 수치 변화시 호출
         public event Action<int> OnGoldChanged; //골드 변화시 호출
@@ -80,7 +68,7 @@ namespace Player
         }
         private void Update()
         {
-            if (_isDead == true || GameManager.Instance?.IsPlaying() == false)//정지 혹은 사망이라면
+            if (_isDead == true) //|| GameManager.Instance?.IsPlaying() == false)//정지 혹은 사망이라면
             {
                 return;
             }
@@ -99,10 +87,21 @@ namespace Player
                 return;
             }
             _scanTimer += Time.deltaTime; //프레임당 시간 누적
-            if (_scanTimer >= _scanInterval) //누적시간 >= 0.5초
+            if (_scanTimer >= _scanInterval) //누적시간 >= 0.1초
             {
                 _scanTimer = 0f;
                 Scan();
+            }
+            if (_detectedEnemies.Count > 0)
+            {
+                IEnemy target = FindClosestEnemy(_detectedEnemies);
+                if (target != null)
+                {
+                    foreach (Weapon weapon in _weapons)
+                    {
+                        weapon?.Fire(target);
+                    }
+                }
             }
         }
         /// <summary>
@@ -142,7 +141,7 @@ namespace Player
             if (_currentHp <= 0)
             {
                 Die();
-                GameManager.Instance?.GameOver();
+                //GameManager.Instance?.GameOver();
             }
         }
         /// <summary>
@@ -151,7 +150,6 @@ namespace Player
         /// <param name="type">업그레이드 타입</param>
         public void UpgradeStats(UI.UpgradeType type, float value)
         {
-
             switch (type)//효과 적용
             {
                 case UI.UpgradeType.MaxHp:
@@ -167,7 +165,6 @@ namespace Player
                     DetectRangeUp(value);
                     break;
             }
-
             OnStatsChanged?.Invoke();
         }
         /// <summary>
@@ -210,11 +207,6 @@ namespace Player
             _currentHp = Mathf.Min(_currentHp + _baseHpRegen * deltaTime, _baseMaxHp);
             OnStatsChanged?.Invoke();
         }
-        /// <summary>
-        /// 가까운적 거리 계산
-        /// </summary>
-        /// <param name="enemies">적 리스트</param>
-        /// <returns></returns>
         private IEnemy FindClosestEnemy(List<IEnemy> enemies)//가까운 적 찾기
         {
             if (enemies == null || enemies.Count == 0)//null 방지용
@@ -230,7 +222,7 @@ namespace Player
                     continue;
                 }
                 float enemyDistance = (transform.position - enemy.Transform.position).sqrMagnitude;//적 거리 계산
-                if (enemyDistance < (_detectRange * _detectRange) && enemyDistance < closestDistance)//적 거리가 탐지범위 그리고 가장 가까운 적 범위보다 작다면
+                if (enemyDistance < closestDistance)//적 거리가 탐지범위 작다면
                 {
                     closestEnemy = enemy; //가장 가까운 적 갱신
                     closestDistance = enemyDistance; //가장 가까운 적 거리 갱신
@@ -238,6 +230,7 @@ namespace Player
             }
             return closestEnemy; //가장 가까운 적 리턴
         }
+
         /// <summary>
         /// 적 탐지
         /// </summary>
@@ -247,17 +240,32 @@ namespace Player
             {
                 return;
             }
+            _detectedEnemies.RemoveAll(IsEnemyClear);//리스트에서 null,죽은적 제외
             GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");//적 태그를 가진 모든 오브젝트(수정해야 될 수도있음)
-            List<IEnemy> enemyList = new List<IEnemy>(enemies.Length); //리스트 생성
             foreach (GameObject obj in enemies)
             {
                 if (obj.activeInHierarchy && obj.TryGetComponent<IEnemy>(out IEnemy enemy))//활성화,적인터페이스가진 적만
                 {
-                    enemyList.Add(enemy);//리스트에 추가
+                    if (enemy.IsDead)
+                    {
+                        continue;
+                    }
+                    float sqrDist = (transform.position - enemy.Transform.position).sqrMagnitude;
+                    if (sqrDist <= _detectRange * _detectRange)
+                    {
+                        if (_detectedEnemies.Contains(enemy) == false)
+                        {
+                            _detectedEnemies.Add(enemy);
+                        }
+                    }
                 }
             }
-            _closestEnemy = FindClosestEnemy(enemyList);//가까운적 계산
         }
+        private bool IsEnemyClear(IEnemy enemy)//null이거나 죽은적은 true
+        {
+            return enemy == null || enemy.IsDead;
+        }
+
         private void Die()
         {
             _isDead = true;
@@ -286,7 +294,7 @@ namespace Player
             }
         }
         /// <summary>
-        /// 
+        /// 수정될 때마다 호출되는 함수
         /// </summary>
         private void OnValidate()//콜라이더 실시간 반영
         {
@@ -306,4 +314,5 @@ namespace Player
         }
 
     }
+
 }

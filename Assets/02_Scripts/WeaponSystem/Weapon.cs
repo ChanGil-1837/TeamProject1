@@ -46,7 +46,7 @@ public abstract class Weapon : MonoBehaviour
     private WaitUntil fireState;
     private bool canFire;
 
-    protected Player.Player player;
+    protected JHJ.Player player;
 
 
 
@@ -57,7 +57,7 @@ public abstract class Weapon : MonoBehaviour
 
     private void Init()
     {
-        player = GetComponentInParent<Player.Player>();
+        player = GetComponentInParent<JHJ.Player>();
 
         fireState = new WaitUntil(() => canFire);
         attackInterval = new WaitForSeconds(interval);
@@ -151,12 +151,12 @@ public abstract class Weapon : MonoBehaviour
         {
             yield return fireState;
 
-            IEnemy enemy = player.ClosestEnemy;
+            // IEnemy enemy = player;
 
-            if(enemy != null)
-            {
-                Fire(enemy);
-            }
+            // if(enemy != null)
+            // {
+            //     Fire(enemy);
+            // }
 
             yield return attackInterval;
         }
