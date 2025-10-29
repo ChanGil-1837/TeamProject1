@@ -49,8 +49,9 @@ MonoBehaviour:
   - {fileID: 6849024127437812036, guid: 7db7d5df5ff9a5a4088a72827d2a0897, type: 3}
   - {fileID: 8036727523999895194, guid: 0f85d8e33c77af049909453b941f86f1, type: 3}
   - {fileID: 2866081480140857432, guid: fc0bfefa9183a6f47bd03f032d0e56a1, type: 3}
-  _normalEnemyNumber: 1
-  _tankEnemyNumber: 0
-  _speedEnemyNumber: 0
-  _bossEnemyNumber: 0
+  _normalEnemyNumber: 2
+  _tankEnemyNumber: 2
+  _speedEnemyNumber: 2
+  _bossEnemyNumber: 2
   _attackRange: 10
+  _spawnerInterval: 1

@@ -118,6 +118,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82e8ad97de5c21a45a1dd7121a714d52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHP: 1
-  _moveSpeed: 5
-  _damage: 1
+  EnemySpawnerObject: {fileID: 4535741687177326043, guid: 217ce0765274b414ba6a2807d9a8724d, type: 3}

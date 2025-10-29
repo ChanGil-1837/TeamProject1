@@ -21,6 +21,9 @@ public interface IEnemy
     // 피격 시
     void TakeDamage(int damage);
 
+    // 웨이브 증가 시, 강화됨
+    //void SetWaveLevel(int level);
+
     // 적 상태
     public bool IsDead
     {
@@ -31,4 +34,11 @@ public interface IEnemy
     {
         get;
     }
+
+    // 리워드
+    public float Reward
+    {
+        get;
+    }
+
 }
