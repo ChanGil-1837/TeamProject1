@@ -7,8 +7,6 @@ public class Projectile : MonoBehaviour
     private Rigidbody rigid;
     protected Weapon weapon;
 
-    [SerializeField] private float speed;
-
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
@@ -47,12 +45,12 @@ public class Projectile : MonoBehaviour
         DisableProjectile();
     }
 
-    // 방향, 속도 설정
-    public void SetDirection(Vector3 dir)
+    // 방향 설정
+    public void SetVelocity(Vector3 dir)
     {
         if (dir.magnitude > 0)
         {
-            rigid.velocity = dir * speed;
+            rigid.velocity = dir * weapon.Velocity;
         }
     }
 
