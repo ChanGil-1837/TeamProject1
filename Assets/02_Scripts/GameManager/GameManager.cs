@@ -9,7 +9,6 @@ namespace TeamProject.GameSystem
 {
     public class GameManager : MonoBehaviour
     {
-
         public static GameManager Instance { get; private set; }
 
         private void Awake()
@@ -26,34 +25,54 @@ namespace TeamProject.GameSystem
 
         public EnemySpawner enemySpawner;
 
-        public int currentWave = 1;
+        public int currentWave = 0;
         public float waveDuration = 30f;
         public float waveRemain = 30f;
 
         public float nowInterest = 0.0f;
         public int playerGold = 0;
-
+        private bool isWaving;
+        private bool isBossSpawned = false;
         public Player player;
 
-        // 1. °ÔÀÓ ½ÃÀÛ 
+        // [ì¶”ê°€] ë³´ìŠ¤ ê´€ë ¨ í•„ë“œ
+        //[Header("Boss Settings")]
+        //public GameObject[] bossPrefabs;       // ì›¨ì´ë¸Œë³„ ë³´ìŠ¤ í”„ë¦¬íŒ¹(ì—†ìœ¼ë©´ ë§ˆì§€ë§‰ê±¸ë¡œ ê³ ì •)
+        //public Transform bossSpawnPoint;       // ë³´ìŠ¤ ìŠ¤í° ìœ„ì¹˜(ì—†ìœ¼ë©´ (0,0,0))
+        //private GameObject _currentBoss;       // í˜„ ë³´ìŠ¤ ì¸ìŠ¤í„´ìŠ¤
+        //private bool _bossPhase;               // ë³´ìŠ¤ í˜ì´ì¦ˆ ì§„í–‰ ì¤‘?
+        //public bool IsBossPhase => _bossPhase; // UIê°€ ì½ì–´ ì“¸ ìˆ˜ ìˆê²Œ
+
+        // 1. ê²Œì„ ì‹œì‘ 
         public void GameStart()
         {
-            currentWave = 1;
-            waveRemain = 30f;
+            isWaving = false;
+            NextWave();
         }
 
-        // 2. °ÔÀÓ ¿şÀÌºê ÁøÇà
+        // 2. ê²Œì„ ì›¨ì´ë¸Œ ì§„í–‰
         public void Update()
         {
+
+            if (!IsPlaying) return; // Pause/GameOverë©´ ì•„ë˜ ë¡œì§ ì „ë¶€ ì°¨ë‹¨
+
             if (IsGameOver)
                 return;
-
-            TickTime();
-
-            if (waveRemain < 0.0f)
+            if (isWaving)
             {
-                NextWave();
+                TickTime();
+                if(waveRemain < 0.0f)
+                {
+                    if(!isBossSpawned)
+                    {
+                        //enemySpawner.SpawnBoss();
+                        isBossSpawned = true;
+                        isWaving = false;
+                    }
+                }
             }
+        
+
         }
 
         public void TickTime()
@@ -61,63 +80,61 @@ namespace TeamProject.GameSystem
             waveRemain -= Time.deltaTime;
         }
 
-        // 3. ¿şÀÌºê ÁøÇà¿¡ µû¸¥ Ã³¸®
-        public void NextWave()
+        // 3. ì›¨ì´ë¸Œ ì§„í–‰ì— ë”°ë¥¸ ì²˜ë¦¬
+        public void NextWave() // ìŠ¤íƒ€íŠ¸ì—ì„œ ì´ê±¸ë¡œ í˜¸ì¶œë˜ê²Œ
         {
             currentWave++;
-            // °¡´ÉÇÏ´Ù¸é ÄÚ·çÆ¾À¸·Î ¼­¼­È÷ Áõ°¡µÇ´Â °ÍÀ» UI¿¡ ¹İ¿µÇØ¼­ ½Ã°£ÀÌ Â÷¿À¸£´Â °ÍÀ» Ç¥Çö.
             waveRemain = 30f;
-
+            isWaving = true;
             if (enemySpawner != null)
             {
                 enemySpawner.SetWaveLevel(currentWave);
+                //enemySpawner.StartSpawn();            //í˜œì£¼ë‹˜ ì‘ì—… ì™„ë£Œ ë˜ë©´ í™•ì¸.
             }
-
+            
             InterestPayment();
         }
 
-        // 4. ÀÌÀÚ Áö±Ş
+        // 4. ì´ì ì§€ê¸‰
         public void InterestPayment()
         {
             if (player == null)
                 return;
 
-            // 1. ÇÃ·¹ÀÌ¾î¸¦ ÂüÁ¶ÇØ¼­ ÇöÀç µ·ÀÌ ¾ó¸¶ ÀÖ´ÂÁö °¡Á®¿Â´Ù.
             int currentMoney = player.Gold;
-
-            // 2. °¡Á®¿Â µ·¿¡ ÀÌÀÚ¸¦ °öÇØ¼­ ¾ó¸¶¸¦ Áà¾ß ÇÒÁö °è»êÇÑ´Ù.
             int interest = (int)(currentMoney * nowInterest);
-
-            // 3. ÀÌÀÚ Áö±ŞÀ» À§ÇØ ÇÃ·¹ÀÌ¾îÀÇ µ·¿¡ ÀÌÀÚ¸¦ ´õÇÑ´Ù.
             player.AddGold(interest);
         }
 
-        // 5. ÀÌÀÚÀ² ¾÷±×·¹ÀÌµå
+        // 5. ì´ììœ¨ ì—…ê·¸ë ˆì´ë“œ
         public void UpgradeInterest()
         {
             nowInterest += 0.1f;
         }
 
-        // 6. Àû Ã³Ä¡ ½Ã ¸®¿öµå Áö±Ş
+        // 6. ì  ì²˜ì¹˜ ì‹œ ë¦¬ì›Œë“œ ì§€ê¸‰
         public void EnemyKill(IEnemy enemy)
         {
             if (enemy == null || player == null)
                 return;
 
-            int reward = (int)enemy.Reward;  // ¸®¿öµå¸¦ intÇüÀ¸·Î º¯È¯
+            int reward = (int)enemy.Reward;  // íŒ€ ê¸°ì¤€ì´ intë¼ë©´ ë‹¨ìˆœ ìºìŠ¤íŒ…ìœ¼ë¡œ ì¶©ë¶„
             player.AddGold(reward);
         }
 
-        public void DamagePlayer(IEnemy enemy)
+        public void BossEliminated()
         {
-            // ¹Ù²ï »ç¾çÀ¸·ÎÀÎÇØ ºÒ ÇÊ¿äÇÑ ¸Ş¼­µå
+            
         }
 
         public bool IsGameOver { get; private set; }
+        public bool IsPaused { get; private set; }
+        public bool IsPlaying => !IsGameOver && !IsPaused;
 
         public void GameOver()
         {
             IsGameOver = true;
         }
+
     }
 }
