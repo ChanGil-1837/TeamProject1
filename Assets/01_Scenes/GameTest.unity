@@ -3305,6 +3305,8 @@ MonoBehaviour:
   normalWeapon: {fileID: 1675121011}
   multiWeapon: {fileID: 1459829651}
   bounceWeapon: {fileID: 139232498}
+  floatingTextPrefab: {fileID: 0}
+  mainCanvas: {fileID: 0}
 --- !u!114 &1082994246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4435,7 +4437,7 @@ MonoBehaviour:
   interval: 0.7
   lifeTime: 0.5
   poolSize: 0
-  projectilePrefab: {fileID: 7393619373236079972, guid: 90f792b9df18fbe46bf7406847c21708, type: 3}
+  projectilePrefab: {fileID: -5130536287329203387, guid: 871ef015a89eef845a091e08e844cb8c, type: 3}
   shotCount: 3
   totalAngle: 45
 --- !u!4 &1478298851 stripped
@@ -4984,7 +4986,6 @@ MonoBehaviour:
   circleThickness: 0.1
   circleMaterial: {fileID: 2100000, guid: 3bc333460d3424d6a9149422b2d96e35, type: 2}
   target: {fileID: 0}
-  rangeField: _detectRange
   refreshTime: 0.1
 --- !u!120 &1635191800
 LineRenderer:
@@ -7279,7 +7280,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4535741687177326043, guid: 217ce0765274b414ba6a2807d9a8724d, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7085525102511736907, guid: 217ce0765274b414ba6a2807d9a8724d, type: 3}
       propertyPath: m_LocalPosition.x
