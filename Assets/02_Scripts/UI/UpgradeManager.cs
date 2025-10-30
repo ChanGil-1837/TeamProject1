@@ -41,6 +41,9 @@ namespace UI
         [SerializeField] private MultiWeapon multiWeapon;
         [SerializeField] private BounceWeapon bounceWeapon;
 
+        public GameObject floatingTextPrefab;
+        public Canvas mainCanvas;
+
         [System.Serializable]
         public struct UpgradeData
         {
@@ -99,7 +102,7 @@ namespace UI
             int cost = currentCost[type];
             if (!player.SpendGold(cost))
             {
-                //업그레이드 돈 부족으로 인해 불가 판정 
+                ShowFloatingText("Not enough gold");
                 return;
             }
 
@@ -108,24 +111,45 @@ namespace UI
 
             switch (type)
             {
-                case UpgradeType.MaxHp:          
-                case UpgradeType.Defense:        
-                case UpgradeType.HpRegen:        
-                case UpgradeType.DetectRange:    player.UpgradeStats(type,data.valueStep); break;
+                case UpgradeType.MaxHp:
+                case UpgradeType.Defense:
+                case UpgradeType.HpRegen:
+                case UpgradeType.DetectRange: player.UpgradeStats(type, data.valueStep); break;
 
                 // case UpgradeType.GoldMultiplier: player.GoldMultiplierUp(data.valueStep); break;
 
-                case UpgradeType.NormalDamage:   normalWeapon.UpgradeDamage((int)data.valueStep); break;
+                case UpgradeType.NormalDamage: normalWeapon.UpgradeDamage((int)data.valueStep); break;
                 case UpgradeType.NormalFireRate: normalWeapon.UpgradeFireRate(data.valueStep); break;
 
-                case UpgradeType.MultiDamage:    multiWeapon.UpgradeDamage((int)data.valueStep); break;
-                case UpgradeType.MultiFireRate:  multiWeapon.UpgradeFireRate(data.valueStep); break;
+                case UpgradeType.MultiDamage: multiWeapon.UpgradeDamage((int)data.valueStep); break;
+                case UpgradeType.MultiFireRate: multiWeapon.UpgradeFireRate(data.valueStep); break;
                 case UpgradeType.MultiShotCount: multiWeapon.UpgradeShotCount((int)data.valueStep); break;
 
-                case UpgradeType.BounceDamage:   bounceWeapon.UpgradeDamage((int)data.valueStep); break;
+                case UpgradeType.BounceDamage: bounceWeapon.UpgradeDamage((int)data.valueStep); break;
                 case UpgradeType.BounceFireRate: bounceWeapon.UpgradeFireRate(data.valueStep); break;
             }
+            ShowFloatingText("Upgrade Complete");
+        }
+        private void ShowFloatingText(string message)
+        {
+            if (floatingTextPrefab == null || mainCanvas == null)
+            {
+                Debug.LogError("FloatingText Prefab 또는 Main Canvas가 할당되지 않았습니다.");
+                return;
+            }
 
+            GameObject go = Instantiate(floatingTextPrefab, mainCanvas.transform); 
+            
+            Vector3 mousePosition = Input.mousePosition; 
+            
+            RectTransform rectTransform = go.GetComponent<RectTransform>();
+            rectTransform.position = mousePosition + new Vector3(0, 50, 0); // Y축으로 50픽셀 위로 살짝 띄움
+
+            FloatingText ft = go.GetComponent<FloatingText>();
+            if (ft != null)
+            {
+                ft.Initialize(message);
+            }
         }
     }
 
