@@ -153,10 +153,10 @@ public class EnemySpawner : MonoBehaviour
                             // 웨이브 진행중이고 보스몹이면 소환 안되게
          // (WaveRemain 프로퍼티 추가되면 활성화)--------------------------------------------------
                             //if(suffleActiveEnemies[enemyTurn].name == "Boss-4000" && TeamProject.GameSystem.GameManager.Instance.WaveRemain <=0)
-                            {
-                                enemyTurn++;
-                                break;
-                            }
+                            //{
+                            //    enemyTurn++;
+                            //    break;
+                            //}
 
                             // 반지름 길이 = 사정거리 조건 맞을 때까지 랜덤
                             Vector3 direction = GameObject.Find("Player").transform.position + (Random.insideUnitSphere * _attackRange);
