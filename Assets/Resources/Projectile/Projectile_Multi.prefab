@@ -183,7 +183,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: e8f2e430583dfaf4d826afc4243a6a41, type: 2}
     - target: {fileID: 4406284481752297905, guid: e6beea1e4365e334ea98f3a7c364d67f, type: 3}
       propertyPath: EmissionModule.enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6970516779049442917, guid: e6beea1e4365e334ea98f3a7c364d67f, type: 3}
       propertyPath: m_LocalPosition.x
