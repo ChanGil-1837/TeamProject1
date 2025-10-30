@@ -11,14 +11,6 @@ public class TankEnemy : BaseEnemy
 {
     //TankEnemy
 
-    private void Awake()
-    {
-        EnemySpawnerObject = GameObject.Find("EnemySpawner");
-    }
-    private void Update()
-    {
-        MoveToPlayer();
-    }
 
     public override void Init()
     {

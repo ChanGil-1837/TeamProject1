@@ -103,16 +103,21 @@ public class EnemySpawner : MonoBehaviour
         CreateEnemy(speedEnemies, _speedEnemyNumber * wave, "Speed", 2);
         CreateEnemy(bossEnemies, 1, "Boss", 3);
         ShuffleList();
-
-        _normalEnemyNumber++;
         
+        if (suffleActiveEnemies.Count < 25)
+        {
+            _normalEnemyNumber++;
+        }
+
         if (wave % 2 == 0 )
         {
             _tankEnemyNumber++;
+            _normalEnemyNumber--;
         }
         if (wave % 3 == 0)
         {
             _speedEnemyNumber++;
+            _normalEnemyNumber--;
         }
     }
 

@@ -22,9 +22,22 @@ public class BaseEnemy : MonoBehaviour, IEnemy
     public Transform Transform { get { return transform; } }
     public Collider Collider { get { return GetComponent<Collider>(); } }
 
+    private void Awake()
+    {
+        EnemySpawnerObject = GameObject.Find("EnemySpawner");
+    }
+    private void Update()
+    {
+        MoveToPlayer();
+        // 현재 체력이 0이면 사망처리
+        if (currentHP <= 0)
+        {
+            EnemyDie();
+        }
+    }
+
     private void OnEnable()
     {
-        Debug.Log($"HP : {currentHP}/{maxHP}");
         Collider.enabled = false;
         Collider.enabled = true;
     }
@@ -62,9 +75,14 @@ public class BaseEnemy : MonoBehaviour, IEnemy
     {
         if (other.tag == "Player")
         {
+            Debug.Log($"HP : {currentHP}/{maxHP}");
             Debug.Log($"{gameObject.name} 접촉함.");
             other.GetComponentInParent<Player>().TakeDamage(damage);
             EnemyDie();
+        }
+        if (other.tag == "Projectile")
+        {
+            Debug.Log($"HP : {currentHP}/{maxHP}");
         }
     }
 
@@ -80,12 +98,6 @@ public class BaseEnemy : MonoBehaviour, IEnemy
     public void TakeDamage(int damage)
     {
         currentHP -= damage;
-
-        // 현재 체력이 0이면 사망처리
-        if (currentHP <= 0)
-        {
-            EnemyDie();
-        }
     }
 
     public void SetWaveLevel(int level)

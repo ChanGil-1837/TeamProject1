@@ -11,15 +11,6 @@ public class SpeedEnemy : BaseEnemy
 {
     //SpeedEnemy
 
-    private void Awake()
-    {
-        EnemySpawnerObject = GameObject.Find("EnemySpawner");
-    }
-    private void Update()
-    {
-        MoveToPlayer();
-    }
-
     public override void Init()
     {
         maxHP = EnemySpawnerObject.GetComponent<EnemySpawner>().MaxHP;

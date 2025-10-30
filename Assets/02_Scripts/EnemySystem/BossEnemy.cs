@@ -11,15 +11,6 @@ public class BossEnemy : BaseEnemy
 {
     //BossEnemy
 
-    private void Awake()
-    {
-        EnemySpawnerObject = GameObject.Find("EnemySpawner");
-    }
-    private void Update()
-    {
-        MoveToPlayer();
-    }
-
     public override void Init()
     {
         maxHP = 2 * EnemySpawnerObject.GetComponent<EnemySpawner>().MaxHP;
