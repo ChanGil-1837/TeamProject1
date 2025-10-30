@@ -24,6 +24,9 @@ public abstract class Weapon : MonoBehaviour
     [SerializeField] private float interval = 0.5f;
 
     [Space]
+    [SerializeField] private float lifeTime = 0.5f;
+
+    [Space]
     [SerializeField] private int poolSize = 30;
 
     [Space]
@@ -32,6 +35,7 @@ public abstract class Weapon : MonoBehaviour
 
     public int Damage => damage;
     public float Speed => speed;
+    public float LifeTime => lifeTime;
     public int DamageLevel => damageLevel;
     public int IntervalLevel => intervalLevel;
 
