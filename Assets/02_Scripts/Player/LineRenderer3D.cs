@@ -26,6 +26,7 @@ public class LineRenderer3D : MonoBehaviour
         {
             lineRenderer = GetComponentInChildren<LineRenderer>();
         }
+
         if (lineRenderer == null)
         {
             Debug.LogError("라인 렌더러 없음");

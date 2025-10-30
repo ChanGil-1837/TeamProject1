@@ -3,7 +3,7 @@ using UnityEngine;
 
 public sealed class BounceWeapon : Weapon
 {
-    [Header("¹Ù¿î½º")]
+    [Header("ï¿½Ù¿î½º")]
     [SerializeField] private int maxBounceCount = 3;
 
     public int BounceLevel => bounceLevel;
@@ -11,13 +11,15 @@ public sealed class BounceWeapon : Weapon
 
     public override void Fire(IEnemy enemy)
     {
+        if (!isAvailable) return;
+        
         if (CheckCondition(enemy) == false) return;
 
         Vector3 direction = GetDirection(enemy);
 
         Projectile projectile = FireProjectile(direction);
 
-        // ¹Ù¿î½º Åõ»çÃ¼ ¼³Á¤
+        // ï¿½Ù¿î½º ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½
         if (projectile is BounceProjectile bounceProjectile)
         {
             bounceProjectile.SetBounceCount(maxBounceCount);
@@ -27,7 +29,7 @@ public sealed class BounceWeapon : Weapon
     }
 
 
-    // ¹Ù¿î½º Ãß°¡ ¾÷±×·¹ÀÌµå
+    // ï¿½Ù¿î½º ï¿½ß°ï¿½ ï¿½ï¿½ï¿½×·ï¿½ï¿½Ìµï¿½
     public void UpgradeBounceCount(int bounceIncrease)
     {
         maxBounceCount += bounceIncrease;

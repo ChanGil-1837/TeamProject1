@@ -134,6 +134,11 @@ namespace JHJ
             _gold += amount;
             OnGoldChanged?.Invoke(_gold);
         }
+
+        public void GainGold(int amount)
+        {
+            AddGold(amount);
+        }
         /// <summary>
         /// 플레이어가 입은 피해
         /// </summary>

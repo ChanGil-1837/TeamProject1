@@ -2,9 +2,16 @@ using UnityEngine;
 
 public sealed class NormalWeapon : Weapon
 {
+    protected override void Awake()
+    {
+        isAvailable = true;
+        base.Awake();
+        
+    }
     public override void Fire(IEnemy enemy)
     {
-        // Á¶°Ç Ã¼Å©
+        if (!isAvailable) return;
+        // ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
         if (CheckCondition(enemy) == false) return;
 
         Vector3 direction = GetDirection(enemy);

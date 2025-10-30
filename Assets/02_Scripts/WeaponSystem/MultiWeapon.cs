@@ -2,9 +2,9 @@ using UnityEngine;
 
 public sealed class MultiWeapon : Weapon
 {
-    [Header("Åõ»çÃ¼ ¼ö")]
+    [Header("ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½ï¿½")]
     [SerializeField] private int shotCount = 3;
-    [Header("°¢µµ")]
+    [Header("ï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private float totalAngle = 45f;
 
     public int ShotLevel => shotLevel;
@@ -12,29 +12,30 @@ public sealed class MultiWeapon : Weapon
 
     public override void Fire(IEnemy enemy)
     {
+        if (!isAvailable) return;
         if (CheckCondition(enemy) == false) return;
 
         Vector3 baseDirection = GetDirection(enemy);
 
-        // 1¹ß ÀÌÇÏ ¾ÈÀüÀåÄ¡
+        // 1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¡
         if (shotCount <= 1)
         {
             FireProjectile(baseDirection);
             return;
         }
 
-        // °¢µµ ¿ÞÂÊºÎÅÍ
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Êºï¿½ï¿½ï¿½
         float startAngle = -totalAngle / 2f;
 
-        // Åõ»çÃ¼ °£ °£°Ý
+        // ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         float angleStep = 0f;
         
-        // °£°Ý °è»ê 
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ 
         angleStep = totalAngle / (shotCount - 1);
         
         for (int i = 0; i < shotCount; i++)
         {
-            // ÃÖÁ¾ °¢µµ °è»ê
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             float finalAngle = startAngle + (angleStep * i);
 
             Quaternion rotation = Quaternion.AngleAxis(finalAngle, Vector3.up);
@@ -47,7 +48,7 @@ public sealed class MultiWeapon : Weapon
         AfterFire();
     }
 
-    // Åõ»çÃ¼ Ãß°¡ ¾÷±×·¹ÀÌµå
+    // ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½ß°ï¿½ ï¿½ï¿½ï¿½×·ï¿½ï¿½Ìµï¿½
     public void UpgradeShotCount(int shotIncrease)
     {
         shotCount += shotIncrease;

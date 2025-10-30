@@ -66,21 +66,21 @@ namespace UI
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            config[UpgradeType.MaxHp]          = new UpgradeData { startCost = 100, costMultiplier = 1.2f, valueStep = 10 };
-            config[UpgradeType.Defense]        = new UpgradeData { startCost = 120, costMultiplier = 1.2f, valueStep = 1 };
-            config[UpgradeType.HpRegen]        = new UpgradeData { startCost = 150, costMultiplier = 1.25f, valueStep = 0.5f };
-            config[UpgradeType.DetectRange]    = new UpgradeData { startCost = 80, costMultiplier = 1.1f, valueStep = 1 };
-            config[UpgradeType.GoldMultiplier] = new UpgradeData { startCost = 200, costMultiplier = 1.5f, valueStep = 0.1f };
+            config[UpgradeType.MaxHp]          = new UpgradeData { startCost = 0,    costMultiplier = 1.2f, valueStep = 10 };
+            config[UpgradeType.Defense]        = new UpgradeData { startCost = 0,    costMultiplier = 1.2f, valueStep = 1 };
+            config[UpgradeType.HpRegen]        = new UpgradeData { startCost = 0,    costMultiplier = 1.25f, valueStep = 0.5f };
+            config[UpgradeType.DetectRange]    = new UpgradeData { startCost = 0,    costMultiplier = 1.1f, valueStep = 1 };
+            config[UpgradeType.GoldMultiplier] = new UpgradeData { startCost = 0,    costMultiplier = 1.5f, valueStep = 0.1f };
 
-            config[UpgradeType.NormalDamage]   = new UpgradeData { startCost = 100, costMultiplier = 1.3f, valueStep = 5 };
-            config[UpgradeType.NormalFireRate] = new UpgradeData { startCost = 100, costMultiplier = 1.25f, valueStep = 0.9f };
+            config[UpgradeType.NormalDamage]   = new UpgradeData { startCost = 0,    costMultiplier = 1.3f, valueStep = 5 };
+            config[UpgradeType.NormalFireRate] = new UpgradeData { startCost = 0,    costMultiplier = 1.25f, valueStep = 0.9f };
 
-            config[UpgradeType.MultiDamage]    = new UpgradeData { startCost = 150, costMultiplier = 1.3f, valueStep = 4 };
-            config[UpgradeType.MultiFireRate]  = new UpgradeData { startCost = 150, costMultiplier = 1.25f, valueStep = 0.9f };
-            config[UpgradeType.MultiShotCount] = new UpgradeData { startCost = 200, costMultiplier = 1.35f, valueStep = 1 };
+            config[UpgradeType.MultiDamage]    = new UpgradeData { startCost = 0,    costMultiplier = 1.3f, valueStep = 4 };
+            config[UpgradeType.MultiFireRate]  = new UpgradeData { startCost = 0,    costMultiplier = 1.25f, valueStep = 0.9f };
+            config[UpgradeType.MultiShotCount] = new UpgradeData { startCost = 0,    costMultiplier = 1.35f, valueStep = 1 };
 
-            config[UpgradeType.BounceDamage]   = new UpgradeData { startCost = 180, costMultiplier = 1.3f, valueStep = 6 };
-            config[UpgradeType.BounceFireRate] = new UpgradeData { startCost = 180, costMultiplier = 1.25f, valueStep = 0.9f };
+            config[UpgradeType.BounceDamage]   = new UpgradeData { startCost = 0,    costMultiplier = 1.3f, valueStep = 6 };
+            config[UpgradeType.BounceFireRate] = new UpgradeData { startCost = 0,    costMultiplier = 1.25f, valueStep = 0.9f };
 
             foreach (var type in config.Keys)
             {
@@ -119,14 +119,46 @@ namespace UI
                 // case UpgradeType.GoldMultiplier: player.GoldMultiplierUp(data.valueStep); break;
 
                 case UpgradeType.NormalDamage: normalWeapon.UpgradeDamage((int)data.valueStep); break;
-                case UpgradeType.NormalFireRate: normalWeapon.UpgradeFireRate(data.valueStep); break;
+                case UpgradeType.NormalFireRate:
+                    if (!normalWeapon.isAvailable)
+                    {
+                        ShowFloatingText("Unlock the weapon first by upgrading its damage");
+                        player.GainGold(cost);
+                        return;
+                    }
+                    normalWeapon.UpgradeFireRate(data.valueStep);
+                    break;
 
                 case UpgradeType.MultiDamage: multiWeapon.UpgradeDamage((int)data.valueStep); break;
-                case UpgradeType.MultiFireRate: multiWeapon.UpgradeFireRate(data.valueStep); break;
-                case UpgradeType.MultiShotCount: multiWeapon.UpgradeShotCount((int)data.valueStep); break;
+                case UpgradeType.MultiFireRate:
+                    if (!multiWeapon.isAvailable)
+                    {
+                        ShowFloatingText("Unlock the weapon first by upgrading its damage");
+                        player.GainGold(cost);
+                        return;
+                    }
+                    multiWeapon.UpgradeFireRate(data.valueStep);
+                    break;
+                case UpgradeType.MultiShotCount:
+                    if (!multiWeapon.isAvailable)
+                    {
+                        ShowFloatingText("Unlock the weapon first by upgrading its damage");
+                        player.GainGold(cost);
+                        return;
+                    }
+                    multiWeapon.UpgradeShotCount((int)data.valueStep);
+                    break;
 
                 case UpgradeType.BounceDamage: bounceWeapon.UpgradeDamage((int)data.valueStep); break;
-                case UpgradeType.BounceFireRate: bounceWeapon.UpgradeFireRate(data.valueStep); break;
+                case UpgradeType.BounceFireRate:
+                    if (!bounceWeapon.isAvailable)
+                    {
+                        ShowFloatingText("Unlock the weapon first by upgrading its damage");
+                        player.GainGold(cost);
+                        return;
+                    }
+                    bounceWeapon.UpgradeFireRate(data.valueStep);
+                    break;
             }
             ShowFloatingText("Upgrade Complete");
         }

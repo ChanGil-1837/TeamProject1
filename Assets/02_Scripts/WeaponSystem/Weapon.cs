@@ -32,7 +32,7 @@ public abstract class Weapon : MonoBehaviour
     [Space]
     [SerializeField] private Projectile projectilePrefab;
 
-
+    public bool isAvailable;
     public int Damage => damage;
     public float Speed => speed;
     public float LifeTime => lifeTime;
@@ -52,7 +52,7 @@ public abstract class Weapon : MonoBehaviour
 
 
 
-    private void Awake()
+    protected virtual void Awake()
     {
         Init();
     }
@@ -129,11 +129,11 @@ public abstract class Weapon : MonoBehaviour
     #region Attack
 
 
-    // ¹ß»ç
+    // ï¿½ß»ï¿½
     public abstract void Fire(IEnemy enemy);
 
 
-    // Á¶°Ç Ã¼Å©
+    // ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
     protected bool CheckCondition(IEnemy enemy)
     {
         if (enemy == null) return false;
@@ -142,7 +142,7 @@ public abstract class Weapon : MonoBehaviour
         return true;
     }
 
-    // ¹æÇâ °è»ê
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     protected Vector3 GetDirection(IEnemy enemy)
     {
         Vector3 baseDirection = enemy.Transform.position - transform.position;
@@ -156,7 +156,7 @@ public abstract class Weapon : MonoBehaviour
         return direction;
     }
 
-    // ¹ß»ç ÈÄ Á¤¸®
+    // ï¿½ß»ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     protected void AfterFire()
     {
         canFire = false;
@@ -173,6 +173,10 @@ public abstract class Weapon : MonoBehaviour
 
     public virtual void UpgradeDamage(int upgradeAmount)
     {
+        if (!isAvailable)
+        {
+            isAvailable = true;
+        }
         damage += upgradeAmount;
         damageLevel++;
     }
