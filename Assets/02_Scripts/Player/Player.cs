@@ -16,13 +16,12 @@ namespace JHJ
         [SerializeField] private float _baseDef = 0f; //방어력
         [SerializeField] private float _detectRange = 5f;//적 탐색 범위
 
-        [Header("Player Gold")]
         [SerializeField] private int _gold;//보유 골드
 
-        [Header("Runtime State")]
-        [SerializeField] private SphereCollider _detectCollider;//탐색용 콜라이더
+        
         private LineRenderer3D _visualRange;
-        private float _currentHp;//변동된 체력(현재 체력임 변동 되기에 따로 이름을 바꾼것)
+        [SerializeField] private float _currentHp;//변동된 체력(현재 체력임 변동 되기에 따로 이름을 바꾼것)
+        [SerializeField] private float _displayTotalDPS; // For Inspector display of TotalDPS
         private bool _isDead = false;//사망여부
 
         [Header("Weapon")]
@@ -69,17 +68,6 @@ namespace JHJ
 
         private void Awake()
         {
-            //방어코드
-            if (_detectCollider == null)
-            {
-                _detectCollider = GetComponent<SphereCollider>();//없는지 확인
-            }
-            if (_detectCollider == null)
-            {
-                _detectCollider = gameObject.AddComponent<SphereCollider>();//없다면 찾아서 연결
-            }
-            _detectCollider.isTrigger = true; // 트리거로 강제 설정
-            _detectCollider.radius = _detectRange; //초기 범위 동기화
             _visualRange = GetComponentInChildren<LineRenderer3D>();
             if (_visualRange != null)
             {
@@ -125,6 +113,8 @@ namespace JHJ
             int count = Mathf.Min(_maxTargets, _detectedEnemies.Count);//탐지된 적이 많아도 _maxTargets까지
             List<IEnemy> targets = _detectedEnemies.GetRange(0, count);//가까운 타겟부터 count까지 
             FireAtTargets(targets);
+
+            _displayTotalDPS = TotalDPS; // Update for Inspector display
         }
         /// <summary>
         /// 플레이어 초기화
@@ -363,24 +353,12 @@ namespace JHJ
         private void DetectRangeUp(float value)
         {
             _detectRange += value;
-            if (_detectCollider != null)
-            {
-                _detectCollider.radius = _detectRange;//범위 갱신
-            }
         }
         /// <summary>
         /// 수정될 때마다 호출되는 함수
         /// </summary>
         private void OnValidate()//콜라이더 실시간 반영
         {
-            if (_detectCollider == null)//방어코드
-            {
-                _detectCollider = GetComponent<SphereCollider>();//없다면 복구
-            }
-            if (_detectCollider != null)
-            {
-                _detectCollider.radius = _detectRange;//탐색범위로
-            }
             if (_visualRange == null)
             {
                 _visualRange = GetComponentInChildren<LineRenderer3D>();
