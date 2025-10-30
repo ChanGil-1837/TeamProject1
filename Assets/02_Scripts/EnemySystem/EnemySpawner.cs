@@ -14,16 +14,16 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private int _bossEnemyNumber;
 
     [Header("적 스폰 거리(플레이어 기준)")]
-    [SerializeField] private float _attackRange = 10f;
+    [SerializeField] private float _attackRange;
 
     [Header("적 생성 주기")]
-    [SerializeField] private float _spawnerInterval = 1.0f; // 적 생성주기
+    [SerializeField] private float _spawnerInterval; // 적 생성주기
                                                             //
                                                             // [Header("기본 최대 체력")]
     [Header("적 기본정보")]
-    [SerializeField] private float _maxHP = 10; // 최대
-    [SerializeField] private float _moveSpeed = 1; // 이동 속도
-    [SerializeField] private float _damage = 10; // 공격력
+    [SerializeField] private float _maxHP; // 최대
+    [SerializeField] private float _moveSpeed; // 이동 속도
+    [SerializeField] private float _damage; // 공격력
     [SerializeField] private float _reward; // 보상
 
     [Header("증가량(test용))")]
@@ -84,6 +84,8 @@ public class EnemySpawner : MonoBehaviour
         CreateEnemy(speedEnemies, _speedEnemyNumber, "Speed", 2);
         CreateEnemy(bossEnemies, _bossEnemyNumber, "Boss", 3);
 
+        Debug.Log($"입력 이속{MoveSpeed}");
+
         ShuffleList();
     }
 
@@ -92,7 +94,6 @@ public class EnemySpawner : MonoBehaviour
         activeCoroutine = StartCoroutine(SpawnEnemy());
     }
 
-    // 타이머 갱신
     private void Update()
     {
         if (Input.GetMouseButtonDown(1)) // 웨이브가 종료되면 모두 비활 성화 + 코루틴 종료

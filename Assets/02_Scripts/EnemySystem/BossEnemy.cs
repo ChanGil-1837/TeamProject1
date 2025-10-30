@@ -25,7 +25,10 @@ public class BossEnemy : MonoBehaviour, IEnemy
     public float Reward { get { return reward; } }
     public Transform Transform { get { return transform; } }
 
-
+    private void Awake()
+    {
+        EnemySpawnerObject = GameObject.Find("EnemySpawner");
+    }
     private void Start()
     {
         Init();
@@ -34,6 +37,11 @@ public class BossEnemy : MonoBehaviour, IEnemy
     private void Update()
     {
         MoveToPlayer();
+        // 현재 체력이 0이면 사망처리
+        if (currentHP <= 0)
+        {
+            EnemyDie();
+        }
     }
 
     // 초기화
@@ -76,14 +84,8 @@ public class BossEnemy : MonoBehaviour, IEnemy
 
         else if (other.tag == "Projectile")
         {
-            other.GetComponent<GameManager>().EnemyKill(this);
+            GameManager.Instance.EnemyKill(this);
             Debug.Log($"{gameObject.name} 공격당함.");
-
-            // 현재 체력이 0이면 사망처리
-            if (currentHP <= 0)
-            {
-                EnemyDie();
-            }
         }
     }
 

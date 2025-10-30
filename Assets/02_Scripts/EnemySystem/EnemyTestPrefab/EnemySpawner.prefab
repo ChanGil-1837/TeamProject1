@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7085525102511736907}
   - component: {fileID: -1643510044999408767}
   m_Layer: 0
-  m_Name: EnemySpwaner
+  m_Name: EnemySpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -49,9 +49,14 @@ MonoBehaviour:
   - {fileID: 6849024127437812036, guid: 7db7d5df5ff9a5a4088a72827d2a0897, type: 3}
   - {fileID: 8036727523999895194, guid: 0f85d8e33c77af049909453b941f86f1, type: 3}
   - {fileID: 2866081480140857432, guid: fc0bfefa9183a6f47bd03f032d0e56a1, type: 3}
-  _normalEnemyNumber: 2
-  _tankEnemyNumber: 2
-  _speedEnemyNumber: 2
-  _bossEnemyNumber: 2
-  _attackRange: 10
+  _normalEnemyNumber: 5
+  _tankEnemyNumber: 1
+  _speedEnemyNumber: 1
+  _bossEnemyNumber: 1
+  _attackRange: 8
   _spawnerInterval: 1
+  _maxHP: 10
+  _moveSpeed: 3
+  _damage: 1
+  _reward: 2
+  _plus: 3

@@ -1,4 +1,3 @@
-
 using System;
 using DG.Tweening.Core.Easing;
 using System.Collections;
@@ -11,7 +10,7 @@ using TeamProject.GameSystem;
 public class NormalEnemy : MonoBehaviour, IEnemy
 {
     //NormalEnemy
-    [SerializeField] private GameObject EnemySpawnerObject;
+    private GameObject EnemySpawnerObject;
 
     private float maxHP; // 최대
     private float currentHP; // 현재
@@ -24,18 +23,28 @@ public class NormalEnemy : MonoBehaviour, IEnemy
     public bool IsDead { get; set; }
     public float Reward { get { return reward; } }
 
-
-
     public Transform Transform { get { return transform; } }
+
+    private void Awake()
+    {
+        EnemySpawnerObject = GameObject.Find("EnemySpawner");
+    }
 
     private void Start()
     {
         Init();
+        Debug.Log($"HP : {currentHP}/{maxHP}");
     }
 
     private void Update()
     {
         MoveToPlayer();
+
+        // 현재 체력이 0이면 사망처리
+        if (currentHP <= 0)
+        {
+            EnemyDie();
+        }
     }
 
     // 초기화
@@ -78,14 +87,8 @@ public class NormalEnemy : MonoBehaviour, IEnemy
 
         else if (other.tag == "Projectile")
         {
-            other.GetComponent<GameManager>().EnemyKill(this);
-            Debug.Log($"{gameObject.name} 공격당함.");
-
-            // 현재 체력이 0이면 사망처리
-            if (currentHP <= 0)
-            {
-                EnemyDie();
-            }
+            GameManager.Instance.EnemyKill(this);
+            Debug.Log($"{this.name} HP : {currentHP}/{maxHP}");
         }
     }
 
