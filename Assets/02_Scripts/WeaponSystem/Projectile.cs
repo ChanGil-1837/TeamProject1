@@ -1,11 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 
 public class Projectile : MonoBehaviour
 {
     private Rigidbody rigid;
     protected Weapon weapon;
+
+    [Header("모델")]
+    [SerializeField] private GameObject model;
+
+    [Header("충돌 파티클")]
+    [SerializeField] private List<ParticleSystem> particles;
+
+    [Header("파티클 방사 수")]
+    [SerializeField] private int emmisionCount = 10;
 
     private void Awake()
     {
@@ -19,6 +29,13 @@ public class Projectile : MonoBehaviour
         this.weapon = weapon;
     }
 
+
+    //활성화 시
+    private void OnEnable()
+    {
+        model.SetActive(true);
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Enemy"))
@@ -26,6 +43,8 @@ public class Projectile : MonoBehaviour
             IEnemy enemy;
 
             other.TryGetComponent<IEnemy>(out enemy);
+
+            EmissionParticle();
 
             EnemyHit(enemy);
         }
@@ -35,6 +54,7 @@ public class Projectile : MonoBehaviour
         }
     }
 
+    // 적 충돌
     protected virtual void EnemyHit(IEnemy enemy)
     {
         if(enemy != null)
@@ -54,8 +74,26 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    // 반환
+    // 모델 비활성화, 파티클, 반환 걸어두기
     protected void DisableProjectile()
+    {
+        model.SetActive(false);
+        EmissionParticle();
+        Invoke("AfterEffect", weapon.LifeTime);
+    }
+
+    // 파티클 방사
+    private void EmissionParticle()
+    {
+        foreach(var p in particles)
+        {
+            p.Emit(emmisionCount);
+        }
+    }
+
+
+    // 이펙트 끝난 후 반환
+    private void AfterEffect()
     {
         weapon.ReturnToPool(this);
     }
