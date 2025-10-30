@@ -129,6 +129,7 @@ public class EnemySpawner : MonoBehaviour
                         // 랜덤 위치가 유효한 거리인지
                         if (direction.magnitude >= _attackRange - 1)
                         {
+                            activeEnemies[enemyTurn].GetComponent<IEnemy>().Init();
                             activeEnemies[enemyTurn].transform.position = direction;
                             activeEnemies[enemyTurn].SetActive(true);
                             enemyTurn++;

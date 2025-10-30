@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TeamProject.GameSystem; //아마도 게임매니저쪽 네임스페이스
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
+
 
 namespace JHJ
 {
@@ -28,8 +28,8 @@ namespace JHJ
         [Header("Weapon")]
         [SerializeField] private List<Weapon> _weapons = new List<Weapon>();//무기 넣을것들(추가식으로 하니까 리스트로 작성)
 
-        //[Header("Enemy Spawn Data")]
-        //[SerializeField] private EnemySpawner _enemySpawner;//인스펙터로 연결해서 리스트받을까함(보류)
+        [Header("Targeting Settings")]
+        [SerializeField] private int _maxTargets = 3;//최대 타겟
 
         private const float RegenInterval = 1f; //1초마다 회복
         private float _regenTimer = 0f; //재생 누적용 타이머
@@ -77,7 +77,7 @@ namespace JHJ
         }
         private void Update()
         {
-            if (_isDead == true)//|| GameManager.Instance?.IsPlaying() == false)//정지 혹은 사망이라면
+            if (_isDead == true || GameManager.Instance?.IsPlaying == false)//정지 혹은 사망이라면
             {
                 return;
             }
@@ -101,17 +101,14 @@ namespace JHJ
                 _scanTimer = 0f;
                 Scan();
             }
-            if (_detectedEnemies.Count > 0)
+            if (_detectedEnemies.Count == 0)
             {
-                IEnemy target = FindClosestEnemy(_detectedEnemies);
-                if (target != null)
-                {
-                    foreach (Weapon weapon in _weapons)
-                    {
-                        weapon?.Fire(target);
-                    }
-                }
+                return;
             }
+            _detectedEnemies.Sort(CompareDistance);
+            int count = Mathf.Min(_maxTargets, _detectedEnemies.Count);
+            List<IEnemy> targets = _detectedEnemies.GetRange(0, count);
+            FireAtTargets(targets);
         }
         /// <summary>
         /// 플레이어 초기화
@@ -221,34 +218,6 @@ namespace JHJ
             _currentHp = Mathf.Min(_currentHp + _baseHpRegen * deltaTime, _baseMaxHp);
             OnStatsChanged?.Invoke();
         }
-        /// <summary>
-        /// 가까운적 찾기용
-        /// </summary>
-        /// <param name="enemies"></param>
-        /// <returns></returns>
-        private IEnemy FindClosestEnemy(List<IEnemy> enemies)//가까운 적 찾기
-        {
-            if (enemies == null || enemies.Count == 0)//null 방지용
-            {
-                return null;
-            }
-            IEnemy closestEnemy = null;
-            float closestDistance = float.MaxValue; //거리 비교용(최대값)
-            foreach (IEnemy enemy in enemies) //전달받은 적 순회
-            {
-                if (enemy == null || enemy.IsDead) //null 이거나 죽은 적 무시
-                {
-                    continue;
-                }
-                float enemyDistance = (transform.position - enemy.Transform.position).sqrMagnitude;//적 거리 계산
-                if (enemyDistance < closestDistance)//적 거리가 탐지범위 작다면
-                {
-                    closestEnemy = enemy; //가장 가까운 적 갱신
-                    closestDistance = enemyDistance; //가장 가까운 적 거리 갱신
-                }
-            }
-            return closestEnemy; //가장 가까운 적 리턴
-        }
 
         /// <summary>
         /// 적 탐지용
@@ -269,7 +238,7 @@ namespace JHJ
                     {
                         continue;
                     }
-                    float sqrDist = (transform.position - enemy.Transform.position).sqrMagnitude;
+                    float sqrDist = (transform.position - enemy.transform.position).sqrMagnitude;
                     if (sqrDist <= _detectRange * _detectRange)
                     {
                         if (_detectedEnemies.Contains(enemy) == false)
@@ -277,6 +246,53 @@ namespace JHJ
                             _detectedEnemies.Add(enemy);
                         }
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 가까운 순서로 정렬
+        /// </summary>
+        /// <param name="targets"></param>
+        private int CompareDistance(IEnemy enemyA, IEnemy enemyB)
+        {
+            if (enemyA == null || enemyB == null)//둘중 null이 있으면 0으로 반환
+            {
+                return 0;
+            }
+            //플레이어 위치기준 거리 계산
+            float distanceA = (transform.position - enemyA.transform.position).sqrMagnitude;//제곱거리
+            float distanceB = (transform.position - enemyB.transform.position).sqrMagnitude;
+
+            return distanceA.CompareTo(distanceB);
+        }
+        /// <summary>
+        /// 무기별 타겟 분배
+        /// </summary>
+        /// <param name="targets"></param>
+        private void FireAtTargets(List<IEnemy> targets)
+        {
+            if (targets == null || targets.Count == 0)
+            {
+                return;
+            }
+            targets.RemoveAll(IsEnemyClear);//죽은적 처리
+            int targetCount = Mathf.Min(_maxTargets, targets.Count);
+            int weaponCount = _weapons.Count;
+            for (int i = 0; i < weaponCount; i++)
+            {
+                Weapon weapon = _weapons[i];
+                if (weapon == null)
+                {
+                    continue;
+                }
+                //적수가 무기수보다 작을 경우 중복 공격을 허용
+                int targetIndex = i % targetCount;
+                IEnemy target = targets[targetIndex];
+
+                if (target != null && !target.IsDead)
+                {
+                    weapon?.Fire(target);
                 }
             }
         }

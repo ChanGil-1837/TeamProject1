@@ -235,9 +235,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponType: 2
-  damage: 0
+  damage: 1
   speed: 5
   interval: 1
+  lifeTime: 0.5
   poolSize: 0
   projectilePrefab: {fileID: -5130536287329203387, guid: dabe5a36fad9b48efa20183348702637, type: 3}
   maxBounceCount: 3
@@ -1046,6 +1047,7 @@ MonoBehaviour:
   damage: 1
   speed: 1
   interval: 1
+  lifeTime: 0.5
   poolSize: 0
   projectilePrefab: {fileID: 7393619373236079972, guid: be4ef1e78e739274b9ed9840318a35bd, type: 3}
   shotCount: 3
@@ -1355,9 +1357,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponType: 0
-  damage: 0
+  damage: 1
   speed: 1
   interval: 1
+  lifeTime: 0.5
   poolSize: 0
   projectilePrefab: {fileID: 7393619373236079972, guid: be4ef1e78e739274b9ed9840318a35bd, type: 3}
 --- !u!114 &1762006490 stripped

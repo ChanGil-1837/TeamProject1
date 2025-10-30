@@ -7,7 +7,7 @@ using UnityEngine;
 using JHJ;
 using TeamProject.GameSystem;
 
-public class BossEnemy : MonoBehaviour, IEnemy
+public class BossEnemy : IEnemy
 {
     //BossEnemy
 
@@ -45,7 +45,7 @@ public class BossEnemy : MonoBehaviour, IEnemy
     }
 
     // 초기화
-    public void Init()
+    public override void Init()
     {
         maxHP = 2 * EnemySpawnerObject.GetComponent<EnemySpawner>().MaxHP;
         currentHP = maxHP;
@@ -56,7 +56,7 @@ public class BossEnemy : MonoBehaviour, IEnemy
     }
 
     // 플레이어로 이동
-    public void MoveToPlayer()
+    public override void MoveToPlayer()
     {
         Transform playerTrans = GameObject.Find("Player").transform;
         // 중앙으로 설정 속도 만큼 이동
@@ -77,7 +77,7 @@ public class BossEnemy : MonoBehaviour, IEnemy
     //    OnTriggerEnter(GameObject.Find("Player").GetComponent<Collider>());
     //}
 
-    public void OnTriggerEnter(Collider other)
+    public override void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
         {
@@ -95,13 +95,13 @@ public class BossEnemy : MonoBehaviour, IEnemy
     }
 
     // 적 체력 감소
-    public void TakeDamage(int damage)
+    public override void TakeDamage(int damage)
     {
         currentHP -= damage;
     }
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
-    public void EnemyDie()
+    public override void EnemyDie()
     {
         gameObject.SetActive(false);
         IsDead = true;
