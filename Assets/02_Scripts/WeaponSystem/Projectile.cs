@@ -8,32 +8,29 @@ public class Projectile : MonoBehaviour
     private Rigidbody rigid;
     protected Weapon weapon;
 
-    [Header("ï¿½ï¿½")]
+    [Header("¸ðµ¨")]
     [SerializeField] private GameObject model;
 
-    [Header("ï¿½æµ¹ ï¿½ï¿½Æ¼Å¬")]
+    [Header("Ãæµ¹ ÆÄÆ¼Å¬")]
     [SerializeField] private List<ParticleSystem> particles;
 
-    [Header("ï¿½ï¿½Æ¼Å¬ ï¿½ï¿½ï¿½ ï¿½ï¿½")]
+    [Header("ÆÄÆ¼Å¬ ¹æ»ç ¼ö")]
     [SerializeField] private int emmisionCount = 10;
-    public Weapon GetWeapon()
-    {
-        return weapon;
-    }
+
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
     }
 
-    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê±ï¿½È­
+    // »ý¼º ½Ã ÃÊ±âÈ­
     public void Init(Weapon weapon)
     {
-        // ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        // Åõ»çÃ¼ÀÇ ¹«±â
         this.weapon = weapon;
     }
 
 
-    //È°ï¿½ï¿½È­ ï¿½ï¿½
+    //È°¼ºÈ­ ½Ã
     private void OnEnable()
     {
         model.SetActive(true);
@@ -57,7 +54,7 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    // ï¿½ï¿½ ï¿½æµ¹
+    // Àû Ãæµ¹
     protected virtual void EnemyHit(IEnemy enemy)
     {
         if(enemy != null)
@@ -68,7 +65,7 @@ public class Projectile : MonoBehaviour
         DisableProjectile();
     }
 
-    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // ¹æÇâ ¼³Á¤
     public void SetVelocity(Vector3 dir)
     {
         if (dir.magnitude > 0)
@@ -77,7 +74,7 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    // ï¿½ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­, ï¿½ï¿½Æ¼Å¬, ï¿½ï¿½È¯ ï¿½É¾ï¿½Î±ï¿½
+    // ¸ðµ¨ ºñÈ°¼ºÈ­, ÆÄÆ¼Å¬, ¹ÝÈ¯ °É¾îµÎ±â
     protected void DisableProjectile()
     {
         model.SetActive(false);
@@ -85,7 +82,7 @@ public class Projectile : MonoBehaviour
         Invoke("AfterEffect", weapon.LifeTime);
     }
 
-    // ï¿½ï¿½Æ¼Å¬ ï¿½ï¿½ï¿½
+    // ÆÄÆ¼Å¬ ¹æ»ç
     private void EmissionParticle()
     {
         foreach(var p in particles)
@@ -95,7 +92,7 @@ public class Projectile : MonoBehaviour
     }
 
 
-    // ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½È¯
+    // ÀÌÆåÆ® ³¡³­ ÈÄ ¹ÝÈ¯
     private void AfterEffect()
     {
         weapon.ReturnToPool(this);

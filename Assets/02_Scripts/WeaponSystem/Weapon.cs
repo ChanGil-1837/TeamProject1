@@ -129,11 +129,11 @@ public abstract class Weapon : MonoBehaviour
     #region Attack
 
 
-    // �߻�
+    // �߻�
     public abstract void Fire(IEnemy enemy);
 
 
-    // ���� üũ
+    // ���� üũ
     protected bool CheckCondition(IEnemy enemy)
     {
         if (enemy == null) return false;
@@ -142,31 +142,21 @@ public abstract class Weapon : MonoBehaviour
         return true;
     }
 
-    // ���� ���
+    // ���� ���
     protected Vector3 GetDirection(IEnemy enemy)
     {
-        if (enemy == null)
-            return transform.forward; // 혹시 모를 null 방지용
+        Vector3 baseDirection = enemy.Transform.position - transform.position;
 
-        // 적의 현재 위치
-        Vector3 enemyPos = enemy.transform.position;
+        baseDirection.y = 0f;
 
-        // 현재 오브젝트 위치
-        Vector3 selfPos = transform.position;
+        Vector3 direction = baseDirection.normalized;
 
-        // 두 점의 차이를 방향으로 계산
-        Vector3 dir = (enemyPos - selfPos);
-        dir.y = 0f; // 수평면 기준으로만 쏘고 싶을 때
+        if (direction == Vector3.zero) direction = Vector3.forward;
 
-        // 0벡터 방지
-        if (dir.sqrMagnitude < 0.0001f)
-            return transform.forward;
-
-        return dir.normalized;
+        return direction;
     }
 
-
-    // �߻� �� ����
+    // �߻� �� ����
     protected void AfterFire()
     {
         canFire = false;

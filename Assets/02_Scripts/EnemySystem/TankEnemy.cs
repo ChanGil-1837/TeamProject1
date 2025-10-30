@@ -7,7 +7,7 @@ using UnityEngine;
 using JHJ;
 using TeamProject.GameSystem;
 
-public class TankEnemy : IEnemy
+public class TankEnemy : MonoBehaviour, IEnemy
 {
     //TankEnemy
 
@@ -50,7 +50,7 @@ public class TankEnemy : IEnemy
     }
 
     // 초기화
-    public override void Init()
+    public void Init()
     {
         // 탱커형 체력 두배
         maxHP = 2 * EnemySpawnerObject.GetComponent<EnemySpawner>().MaxHP;
@@ -62,7 +62,7 @@ public class TankEnemy : IEnemy
     }
 
     // 플레이어로 이동
-    public override void MoveToPlayer()
+    public void MoveToPlayer()
     {
         Transform playerTrans = GameObject.Find("Player").transform;
 
@@ -84,7 +84,7 @@ public class TankEnemy : IEnemy
     //    OnTriggerEnter(GameObject.Find("Player").GetComponent<Collider>());
     //}
 
-    public override void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
         {
@@ -102,13 +102,13 @@ public class TankEnemy : IEnemy
     }
 
     // 적 체력 감소
-    public override void TakeDamage(int damage)
+    public void TakeDamage(int damage)
     {
         currentHP -= damage;
     }
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
-    public override void EnemyDie()
+    public void EnemyDie()
     {
         gameObject.SetActive(false);
         isDead = true;

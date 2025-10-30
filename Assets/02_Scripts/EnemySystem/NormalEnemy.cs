@@ -7,7 +7,7 @@ using UnityEngine;
 using JHJ;
 using TeamProject.GameSystem;
 
-public class NormalEnemy : IEnemy
+public class NormalEnemy : MonoBehaviour, IEnemy
 {
     //NormalEnemy
     private GameObject EnemySpawnerObject;
@@ -40,15 +40,15 @@ public class NormalEnemy : IEnemy
     {
         MoveToPlayer();
 
-        // // 현재 체력이 0이면 사망처리
-        // if (currentHP <= 0)
-        // {
-        //     EnemyDie();
-        // }
+        // 현재 체력이 0이면 사망처리
+        if (currentHP <= 0)
+        {
+            EnemyDie();
+        }
     }
 
     // 초기화
-    public override void Init()
+    public void Init()
     {
         maxHP = EnemySpawnerObject.GetComponent<EnemySpawner>().MaxHP;
         currentHP = maxHP;
@@ -59,7 +59,7 @@ public class NormalEnemy : IEnemy
     }
 
     // 플레이어로 이동
-    public override void MoveToPlayer()
+    public void MoveToPlayer()
     {
         Transform playerTrans = GameObject.Find("Player").transform;
 
@@ -80,7 +80,7 @@ public class NormalEnemy : IEnemy
     //    OnTriggerEnter(GameObject.Find("Player").GetComponent<Collider>());
     //}
 
-    public override void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
         {
@@ -90,20 +90,21 @@ public class NormalEnemy : IEnemy
             EnemyDie();
         }
 
-    }
-
-    // 적 체력 감소
-    public override void TakeDamage(int damage)
-    {
-        currentHP -= damage;
-        if(currentHP <0)
+        else if (other.tag == "Projectile")
         {
-            EnemyDie();
+            GameManager.Instance.EnemyKill(this);
+            Debug.Log($"{this.name} HP : {currentHP}/{maxHP}");
         }
     }
 
+    // 적 체력 감소
+    public void TakeDamage(int damage)
+    {
+        currentHP -= damage;
+    }
+
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
-    public override void EnemyDie()
+    public void EnemyDie()
     {
         gameObject.SetActive(false);
         IsDead = true;
