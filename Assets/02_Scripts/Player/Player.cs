@@ -335,7 +335,7 @@ namespace JHJ
             {
                 _visualRange = GetComponentInChildren<LineRenderer3D>();
             }
-                if (_visualRange != null)
+            if (_visualRange != null)
             {
                 _visualRange.radius = _detectRange;
                 _visualRange.UpdateSync();
