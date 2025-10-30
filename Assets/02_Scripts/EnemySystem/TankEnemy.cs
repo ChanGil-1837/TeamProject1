@@ -19,6 +19,8 @@ public class TankEnemy : MonoBehaviour, IEnemy
     private float damage; // 공격력
     private float plus; // 증가량
 
+
+
     private float reward; // 보상
     public bool isDead;
 
@@ -26,6 +28,11 @@ public class TankEnemy : MonoBehaviour, IEnemy
     public bool IsDead { get { return isDead; } }
     public Transform Transform { get { return transform; } }
     public float Reward { get { return reward; } }
+
+    private void Awake()
+    {
+        EnemySpawnerObject = GameObject.Find("EnemySpawner");
+    }
 
     private void Start()
     {
@@ -35,6 +42,11 @@ public class TankEnemy : MonoBehaviour, IEnemy
     private void Update()
     {
         MoveToPlayer();
+        // 현재 체력이 0이면 사망처리
+        if (currentHP <= 0)
+        {
+            EnemyDie();
+        }
     }
 
     // 초기화
@@ -84,14 +96,8 @@ public class TankEnemy : MonoBehaviour, IEnemy
 
         else if (other.tag == "Projectile")
         {
-            other.GetComponent<GameManager>().EnemyKill(this);
+            GameManager.Instance.EnemyKill(this);
             Debug.Log($"{gameObject.name} 공격당함.");
-
-            // 현재 체력이 0이면 사망처리
-            if (currentHP <= 0)
-            {
-                EnemyDie();
-            }
         }
     }
 

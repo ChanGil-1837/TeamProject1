@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using TeamProject.GameSystem; //아마도 게임매니저쪽 네임스페이스
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 
 namespace JHJ
 {
+    [RequireComponent(typeof(LineRenderer3D))]
     public class Player : MonoBehaviour
     {
         [Header("Ingame Stats")]
@@ -19,6 +21,7 @@ namespace JHJ
 
         [Header("Runtime State")]
         [SerializeField] private SphereCollider _detectCollider;//탐색용 콜라이더
+        private LineRenderer3D _visualRange;
         private float _currentHp;//변동된 체력(현재 체력임 변동 되기에 따로 이름을 바꾼것)
         private bool _isDead = false;//사망여부
 
@@ -61,6 +64,12 @@ namespace JHJ
             }
             _detectCollider.isTrigger = true; // 트리거로 강제 설정
             _detectCollider.radius = _detectRange; //초기 범위 동기화
+            _visualRange = GetComponentInChildren<LineRenderer3D>();
+            if (_visualRange != null)
+            {
+                _visualRange.target = transform;
+                _visualRange.radius = _detectRange;
+            }
         }
         private void Start()
         {
@@ -68,7 +77,7 @@ namespace JHJ
         }
         private void Update()
         {
-            if (_isDead == true) //|| GameManager.Instance?.IsPlaying() == false)//정지 혹은 사망이라면
+            if (_isDead == true)//|| GameManager.Instance?.IsPlaying() == false)//정지 혹은 사망이라면
             {
                 return;
             }
@@ -129,8 +138,7 @@ namespace JHJ
         /// <param name="amount">획득량</param>
         public void AddGold(int amount)
         {
-            //int finalGold = Mathf.RoundToInt(amount * (1 + _baseGoldMultiplier));
-            _gold += amount;//finalGold;
+            _gold += amount;
             OnGoldChanged?.Invoke(_gold);
         }
         /// <summary>
@@ -139,13 +147,19 @@ namespace JHJ
         /// <param name="damage">피해량</param>
         public void TakeDamage(float damage)
         {
+            if(_isDead)
+            {
+                return;
+            }
             damage = Mathf.Max(damage - _baseDef, 1f);//방어력이 공격력보다 높다면 무적상태를 줄것인가? 기본1은 받도록 해둠
             _currentHp -= damage;
+            _currentHp = Mathf.Max(_currentHp, 0f);
+            Debug.Log($"플레이어 남은 체력{_currentHp} ");
             OnStatsChanged?.Invoke();
             if (_currentHp <= 0)
             {
                 Die();
-                //GameManager.Instance?.GameOver();
+                GameManager.Instance?.GameOver();
             }
         }
         /// <summary>
@@ -211,6 +225,11 @@ namespace JHJ
             _currentHp = Mathf.Min(_currentHp + _baseHpRegen * deltaTime, _baseMaxHp);
             OnStatsChanged?.Invoke();
         }
+        /// <summary>
+        /// 가까운적 찾기용
+        /// </summary>
+        /// <param name="enemies"></param>
+        /// <returns></returns>
         private IEnemy FindClosestEnemy(List<IEnemy> enemies)//가까운 적 찾기
         {
             if (enemies == null || enemies.Count == 0)//null 방지용
@@ -236,7 +255,7 @@ namespace JHJ
         }
 
         /// <summary>
-        /// 적 탐지
+        /// 적 탐지용
         /// </summary>
         private void Scan()
         {
@@ -265,6 +284,11 @@ namespace JHJ
                 }
             }
         }
+        /// <summary>
+        /// 죽은적 처리용
+        /// </summary>
+        /// <param name="enemy"></param>
+        /// <returns></returns>
         private bool IsEnemyClear(IEnemy enemy)//null이거나 죽은적은 true
         {
             return enemy == null || enemy.IsDead;
@@ -273,7 +297,8 @@ namespace JHJ
         private void Die()
         {
             _isDead = true;
-            //gameObject.SetActive(false);
+            gameObject.SetActive(false);
+            Debug.Log("플레이어 사망");
         }
 
         private void HpRegenUp(float value)
@@ -309,6 +334,15 @@ namespace JHJ
             if (_detectCollider != null)
             {
                 _detectCollider.radius = _detectRange;//탐색범위로
+            }
+            if (_visualRange == null)
+            {
+                _visualRange = GetComponentInChildren<LineRenderer3D>();
+            }
+                if (_visualRange != null)
+            {
+                _visualRange.radius = _detectRange;
+                _visualRange.UpdateSync();
             }
         }
         private void OnDrawGizmosSelected()//기즈모로 탐지범위 시각화

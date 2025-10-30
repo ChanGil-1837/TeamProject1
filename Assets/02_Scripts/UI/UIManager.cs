@@ -19,7 +19,7 @@ namespace UI
         NONE,
     }
 
-    [ExecuteAlways] // 에디터 모드에서도 실행 가능
+    [ExecuteAlways]
     public class UIManager : MonoBehaviour
     {
         [SerializeField] private Button weaponBtn;
@@ -43,6 +43,18 @@ namespace UI
             get => contentType;
             set
             {
+                if (value == UIContentsType.NONE)
+                {
+                    // NONE이면 모든 콘텐츠 끄기
+                    foreach (var kvp in uiContentsDic)
+                    {
+                        if (kvp.Value != null)
+                            kvp.Value.SetActive(false);
+                    }
+                    contentType = UIContentsType.NONE;
+                    return;
+                }
+
                 if (!isPanelOpen)
                 {
                     isPanelOpen = true;
@@ -61,9 +73,7 @@ namespace UI
         {
 #if UNITY_EDITOR
             if (!Application.isPlaying)
-            {
                 return;
-            }
 #endif
             weaponBtn.onClick.AddListener(() => { ContentType = UIContentsType.WEAPON; });
             healthBtn.onClick.AddListener(() => { ContentType = UIContentsType.HEALTH; });
@@ -71,16 +81,10 @@ namespace UI
 
             closeBtn.onClick.AddListener(() =>
             {
-                isPanelOpen = !isPanelOpen;
-
-                if (isPanelOpen)
-                {
-                    OpenPanel();
-                }
-                else
-                {
-                    ClosePanel();
-                }
+                // 닫기 전용
+                ClosePanel();
+                ContentType = UIContentsType.NONE;
+                isPanelOpen = false;
             });
         }
 
@@ -89,9 +93,7 @@ namespace UI
             foreach (var kvp in uiContentsDic)
             {
                 if (kvp.Value != null)
-                {
                     kvp.Value.SetActive(false);
-                }
             }
 
             if (uiContentsDic.ContainsKey(type) && uiContentsDic[type] != null)
@@ -103,38 +105,29 @@ namespace UI
         private void OpenPanel()
         {
             RectTransform rect = contentPanel?.GetComponent<RectTransform>();
-            if (rect == null)
-            {
-                return;
-            }
+            if (rect == null) return;
 
             if (Application.isPlaying)
-            {
-                rect.DOSizeDelta(new Vector2(rect.sizeDelta.x, OPENSIZE), ANIMDURATION)
-                    .SetEase(Ease.OutCubic);
-            }
+                rect.DOSizeDelta(new Vector2(rect.sizeDelta.x, OPENSIZE), ANIMDURATION).SetEase(Ease.OutCubic);
             else
-            {
                 rect.sizeDelta = new Vector2(rect.sizeDelta.x, OPENSIZE);
-            }
         }
 
         private void ClosePanel()
         {
             RectTransform rect = contentPanel?.GetComponent<RectTransform>();
-            if (rect == null)
-            {
-                return;
-            }
+            if (rect == null) return;
 
             if (Application.isPlaying)
-            {
-                rect.DOSizeDelta(new Vector2(rect.sizeDelta.x, CLOSEDSIZE), ANIMDURATION)
-                    .SetEase(Ease.InCubic);
-            }
+                rect.DOSizeDelta(new Vector2(rect.sizeDelta.x, CLOSEDSIZE), ANIMDURATION).SetEase(Ease.InCubic);
             else
-            {
                 rect.sizeDelta = new Vector2(rect.sizeDelta.x, CLOSEDSIZE);
+
+            // 닫을 때 콘텐츠 전부 비활성화
+            foreach (var kvp in uiContentsDic)
+            {
+                if (kvp.Value != null)
+                    kvp.Value.SetActive(false);
             }
         }
 
@@ -142,25 +135,15 @@ namespace UI
         private void OnValidate()
         {
             if (contentPanel == null)
-            {
                 return;
-            }
 
-            // 인스펙터에서 isPanelOpen 토글 시 즉시 반영
             if (isPanelOpen)
-            {
                 OpenPanel();
-            }
             else
-            {
                 ClosePanel();
-            }
 
-            // 에디터 뷰 갱신
             if (!Application.isPlaying)
-            {
                 EditorApplication.QueuePlayerLoopUpdate();
-            }
         }
 #endif
     }
