@@ -143,7 +143,7 @@ namespace JHJ
         /// <param name="damage">피해량</param>
         public void TakeDamage(float damage)
         {
-            if(_isDead)
+            if (_isDead)
             {
                 return;
             }

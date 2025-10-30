@@ -13,7 +13,6 @@ public class LineRenderer3D : MonoBehaviour
     public Material circleMaterial;          // **Line Renderer에 적용할 마테리얼**
     // ======================
     public Transform target; //플레이어 위치
-    public string rangeField = ("_detectRange");
     public float refreshTime = 0.1f;
 
     private LineRenderer lineRenderer;
@@ -23,6 +22,10 @@ public class LineRenderer3D : MonoBehaviour
     void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
+        if (lineRenderer == null)
+        {
+            lineRenderer = GetComponentInChildren<LineRenderer>();
+        }
         if (lineRenderer == null)
         {
             Debug.LogError("라인 렌더러 없음");
@@ -70,7 +73,7 @@ public class LineRenderer3D : MonoBehaviour
         {
             lineRenderer = GetComponent<LineRenderer>();
         }
- 
+
         CreatePoints();
     }
     private void SyncTarget()
@@ -86,6 +89,14 @@ public class LineRenderer3D : MonoBehaviour
     void CreatePoints()
     {
         // 원의 중심은 이 GameObject의 Transform 위치 (transform.position)
+        if (lineRenderer == null)
+        {
+            return;
+        }
+        if (lineRenderer.positionCount != segments)
+        {
+            lineRenderer.positionCount = segments;
+        }
 
         for (int i = 0; i < segments; i++)
         {
