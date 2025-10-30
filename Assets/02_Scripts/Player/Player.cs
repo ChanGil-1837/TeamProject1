@@ -97,6 +97,10 @@ namespace JHJ
                 IEnemy target = FindClosestEnemy(_detectedEnemies);
                 if (target != null)
                 {
+                    Vector3 dir = (target.Transform.position - transform.position).normalized;
+
+                    transform.rotation = Quaternion.LookRotation(dir);
+
                     foreach (Weapon weapon in _weapons)
                     {
                         weapon?.Fire(target);

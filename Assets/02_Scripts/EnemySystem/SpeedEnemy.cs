@@ -51,12 +51,18 @@ public class SpeedEnemy : MonoBehaviour, IEnemy
     // 플레이어로 이동
     public void MoveToPlayer()
     {
+        Transform playerTrans = GameObject.Find("Player").transform;
+
         // 중앙으로 설정 속도 만큼 이동
         transform.position = Vector3.MoveTowards(
             transform.position,
             GameObject.Find("Player").transform.position,
             moveSpeed * Time.deltaTime
             );
+
+        Vector3 dir = (playerTrans.position - transform.position).normalized;
+
+        transform.rotation = Quaternion.LookRotation(dir);
     }
 
     // 플레이어 공격, 플레이어에게 접촉 시 데미지를 입히고 파괴
