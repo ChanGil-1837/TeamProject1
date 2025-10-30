@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TeamProject.GameSystem;
 
 public class EnemySpawner : MonoBehaviour
 {
@@ -38,28 +39,25 @@ public class EnemySpawner : MonoBehaviour
     public float Reward { get { return _reward; } }
     #endregion
 
-
-    private List<Transform> spawnPoints; // 스폰 포인트	
     private List<GameObject> activeEnemies = new List<GameObject>(); // 생성한 적 리스트
     private List<GameObject> suffleActiveEnemies = new List<GameObject>(); // 적 셔플 리스트
-                                                                           //private List<EnemyData> activeEnemies = new List<EnemyData>();
-                                                                           //private List<EnemyData> suffleActiveEnemies = new List<EnemyData>();
-
 
     private List<GameObject> normalEnemies = new List<GameObject>(); // Normal 적
     private List<GameObject> tankEnemies = new List<GameObject>(); // Normal 적
     private List<GameObject> speedEnemies = new List<GameObject>(); // Normal 적
     private List<GameObject> bossEnemies = new List<GameObject>(); // Normal 적
 
+    #region 변수
     //적 생성 횟수
-    int enemyTurn = 0;
+    private int enemyTurn = 0;
     //리스트 번호
     private int ListN = 0;
+    //코루틴 저장 변수
+    private Coroutine activeCoroutine;
+    //웨이브-레벨 변수
+    private int level=0;
 
-    //게임 실행 상태
-    bool isRunning = true;
-    // 코루틴 저장 변수
-    Coroutine activeCoroutine;
+    #endregion
 
     //public struct EnemyData
     //{
@@ -78,20 +76,13 @@ public class EnemySpawner : MonoBehaviour
     {
         GameObject EnemyBox = new GameObject("EnemyBox");
 
-
-        CreateEnemy(normalEnemies, _normalEnemyNumber, "Normal", 0);
-        CreateEnemy(tankEnemies, _tankEnemyNumber, "Tank", 1);
-        CreateEnemy(speedEnemies, _speedEnemyNumber, "Speed", 2);
-        CreateEnemy(bossEnemies, _bossEnemyNumber, "Boss", 3);
-
         Debug.Log($"입력 이속{MoveSpeed}");
-
-        ShuffleList();
     }
 
     private void Start()
     {
-        activeCoroutine = StartCoroutine(SpawnEnemy());
+        SetWaveEnemy(1);
+        StartSpawn(1);
     }
 
     private void Update()
@@ -104,53 +95,100 @@ public class EnemySpawner : MonoBehaviour
         //ClearEnemies();
     }
 
-    // 적 소환
-    IEnumerator SpawnEnemy()
+    // 웨이브 enemy 설정
+    public void SetWaveEnemy(int wave)
     {
-        float delayTime = _spawnerInterval;
-        while (isRunning)
+        CreateEnemy(normalEnemies, _normalEnemyNumber * wave, "Normal", 0);
+        CreateEnemy(tankEnemies, _tankEnemyNumber * wave, "Tank", 1);
+        CreateEnemy(speedEnemies, _speedEnemyNumber * wave, "Speed", 2);
+        CreateEnemy(bossEnemies, 1, "Boss", 3);
+        ShuffleList();
+
+        _normalEnemyNumber++;
+        
+        if (wave % 2 == 0 )
         {
-            //대기
-            yield return new WaitForSecondsRealtime(_spawnerInterval);
-
-
-            //if (Input.GetMouseButtonDown(0)) // 웨이브가 시작되면 활성화 되는 조건
-            {
-                // 적 활성화 코드
-                if (enemyTurn < activeEnemies.Count)
-                {
-                    // 비활성화된 상태에서만 위치 부여 + 활성화
-                    while (activeEnemies[enemyTurn].activeSelf == false)
-                    {
-                        // 반지름 길이 = 사정거리 에서 몹 스폰
-                        Vector3 direction = GameObject.Find("Player").transform.position + (Random.insideUnitSphere * _attackRange);
-                        direction.y = 0;
-
-                        // 랜덤 위치가 유효한 거리인지
-                        if (direction.magnitude >= _attackRange - 1)
-                        {
-                            activeEnemies[enemyTurn].transform.position = direction;
-                            activeEnemies[enemyTurn].SetActive(true);
-                            enemyTurn++;
-                            Debug.Log($"{enemyTurn}번 적 활성화");
-                            break;
-                        }
-                    }
-                }
-                // 리스트의 끝 번호까지 가면 반복
-                else if (activeEnemies.Count == enemyTurn)
-                {
-                    enemyTurn = 0;
-                }
-
-            }
-            Debug.Log($"{delayTime++}초 대기");
+            _tankEnemyNumber++;
         }
+        if (wave % 3 == 0)
+        {
+            _speedEnemyNumber++;
+        }
+    }
 
+    // 보스 몹 처리
+    public void BossEliminated(int wave)
+    {
+        // 보스 상태가 죽은 상태면
+        if (GetComponent<BossEnemy>().CurrentHP <= 0 )
+        {
+            // 적 스텟 강화
+            SetWaveLevel(wave);
+
+        }
     }
 
 
+    // 적 소환
+    public void StartSpawn(int wave)
+    {
+        activeCoroutine = StartCoroutine(SpawnEnemy(wave));
+    }
 
+        IEnumerator SpawnEnemy(int wave)
+        {
+            float delayTime = _spawnerInterval;
+            //대기
+
+            while (true)
+            {
+                yield return new WaitForSecondsRealtime(_spawnerInterval);
+                {
+                    // 적 활성화 코드
+                    if (enemyTurn < suffleActiveEnemies.Count)
+                    {
+                        // 비활성화된 상태에서만 위치 부여 + 활성화
+                        while (suffleActiveEnemies[enemyTurn].activeSelf == false )
+                        {
+                            // 웨이브 진행중이고 보스몹이면 소환 안되게 
+                            if(suffleActiveEnemies[enemyTurn].name == "Boss-4000" && TeamProject.GameSystem.GameManager.Instance.WaveRemain <=0)
+                            {
+                                enemyTurn++;
+                                break;
+                            }
+
+                            // 반지름 길이 = 사정거리 조건 맞을 때까지 랜덤
+                            Vector3 direction = GameObject.Find("Player").transform.position + (Random.insideUnitSphere * _attackRange);
+                            direction.y = 0;
+
+                            // 랜덤 위치가 유효한 거리인지
+                            if (direction.magnitude >= _attackRange - 1)
+                            {
+                                suffleActiveEnemies[enemyTurn].GetComponent<BaseEnemy>().Init();
+                                suffleActiveEnemies[enemyTurn].GetComponent<BaseEnemy>().IsDead = false;
+
+                                suffleActiveEnemies[enemyTurn].transform.position = direction;
+                                suffleActiveEnemies[enemyTurn].SetActive(true);
+
+                                enemyTurn++;
+                                Debug.Log($"{enemyTurn}번 적 활성화");
+                                break;
+                            }
+                        }
+                    }
+                    // 리스트의 끝 번호까지 가면 반복
+                    if (suffleActiveEnemies.Count == enemyTurn)
+                    {
+                        enemyTurn = 0;
+                    }
+
+                }
+                Debug.Log($"{delayTime++}초 대기");
+            }
+
+        }
+    
+    
 
     // 웨이브 레벨에 따른 적 능력치 처리
     public void SetWaveLevel(int wave)
@@ -173,20 +211,6 @@ public class EnemySpawner : MonoBehaviour
             enemy.GetComponent<BossEnemy>().SetWaveLevel(wave);
         }
     }
-
-
-    // 웨이브 종료시 삭제	
-    //private void ClearEnemies()
-    //{
-    //    if (GetComponent<GameManagerPrototype>().IsGameOver == true) // 웨이브 종료 조건 추가해야 함.
-    //    {
-    //        for (int i = 0; i < activeEnemies.Count; i++)
-    //        {
-    //            activeEnemies[i].SetActive(false);
-    //        }
-    //    }
-    //}
-
 
     // 오브젝트 이름 중복을 피하기 위해 부여
     private int EnemyNameID(List<GameObject> enemyTypeint)
@@ -265,7 +289,6 @@ public class EnemySpawner : MonoBehaviour
         activeEnemies.AddRange(tankEnemies);
         activeEnemies.AddRange(speedEnemies);
         activeEnemies.AddRange(bossEnemies);
-
 
         System.Random random = new System.Random();
         // 리스트 전체 길이 저장

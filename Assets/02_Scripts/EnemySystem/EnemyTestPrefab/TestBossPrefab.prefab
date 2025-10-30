@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5126110418294264453}
   - component: {fileID: 5238847540471350938}
   - component: {fileID: 4152978515450195353}
+  - component: {fileID: -4896438310343024407}
   m_Layer: 0
   m_Name: TestBossPrefab
   m_TagString: Enemy
@@ -46,7 +47,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e916c355873f874ab379be79b2cdc34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EnemySpawnerObject: {fileID: 4535741687177326043, guid: 217ce0765274b414ba6a2807d9a8724d, type: 3}
 --- !u!65 &4152978515450195353
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -62,12 +62,39 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.7, y: 1, z: 1.8}
   m_Center: {x: 0, y: 0.12, z: 0}
+--- !u!54 &-4896438310343024407
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2866081480140857432}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1001 &271625601112862354
 PrefabInstance:
   m_ObjectHideFlags: 0
