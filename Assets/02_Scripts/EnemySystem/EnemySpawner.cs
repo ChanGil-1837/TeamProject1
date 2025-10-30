@@ -150,8 +150,9 @@ public class EnemySpawner : MonoBehaviour
                         // 비활성화된 상태에서만 위치 부여 + 활성화
                         while (suffleActiveEnemies[enemyTurn].activeSelf == false )
                         {
-                            // 웨이브 진행중이고 보스몹이면 소환 안되게 
-                            if(suffleActiveEnemies[enemyTurn].name == "Boss-4000" && TeamProject.GameSystem.GameManager.Instance.WaveRemain <=0)
+                            // 웨이브 진행중이고 보스몹이면 소환 안되게
+         // (WaveRemain 프로퍼티 추가되면 활성화)--------------------------------------------------
+                            //if(suffleActiveEnemies[enemyTurn].name == "Boss-4000" && TeamProject.GameSystem.GameManager.Instance.WaveRemain <=0)
                             {
                                 enemyTurn++;
                                 break;
