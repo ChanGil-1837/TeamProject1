@@ -6,6 +6,7 @@ using static UnityEngine.ParticleSystem;
 public class Projectile : MonoBehaviour
 {
     private Rigidbody rigid;
+    private Collider colli;
     protected Weapon weapon;
 
     [Header("모델")]
@@ -20,6 +21,7 @@ public class Projectile : MonoBehaviour
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
+        colli = GetComponent<Collider>();
     }
 
     // 생성 시 초기화
@@ -34,6 +36,7 @@ public class Projectile : MonoBehaviour
     private void OnEnable()
     {
         model.SetActive(true);
+        colli.enabled = true;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -74,11 +77,17 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    // 모델 비활성화, 파티클, 반환 걸어두기
+    // 비활성화
     protected void DisableProjectile()
     {
+        rigid.velocity = Vector3.zero;
+        colli.enabled = false;
         model.SetActive(false);
+
+        // 파티클
         EmissionParticle();
+
+        // 반환 (파티클 재생 완료 시간)
         Invoke("AfterEffect", weapon.LifeTime);
     }
 
