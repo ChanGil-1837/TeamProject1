@@ -11,6 +11,8 @@ namespace TeamProject.GameSystem
     {
         public static GameManager Instance { get; private set; }
 
+        public event Action OnWaveChanged;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -78,6 +80,7 @@ namespace TeamProject.GameSystem
         public void TickTime()
         {
             waveRemain -= Time.deltaTime;
+            OnWaveChanged?.Invoke();
         }
 
         // 3. 웨이브 진행에 따른 처리
@@ -91,7 +94,7 @@ namespace TeamProject.GameSystem
                 enemySpawner.SetWaveLevel(currentWave);
                 //enemySpawner.StartSpawn();            //혜주님 작업 완료 되면 확인.
             }
-            
+            OnWaveChanged?.Invoke();
             InterestPayment();
         }
 

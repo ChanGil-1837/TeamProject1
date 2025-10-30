@@ -36,6 +36,7 @@ public abstract class Weapon : MonoBehaviour
     public int Damage => damage;
     public float Speed => speed;
     public float LifeTime => lifeTime;
+    public float Interval => interval;
     public int DamageLevel => damageLevel;
     public int IntervalLevel => intervalLevel;
 

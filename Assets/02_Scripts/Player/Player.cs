@@ -48,6 +48,22 @@ namespace JHJ
         public bool IsDead => _isDead;
         public List<IEnemy> DetectedEnemies => _detectedEnemies;//적위치 프로퍼티로 열람
 
+        public float TotalDPS
+        {
+            get
+            {
+                float total = 0f;
+                foreach (var weapon in _weapons)
+                {
+                    if (weapon.Interval > 0) // Avoid division by zero
+                    {
+                        total += weapon.Damage / weapon.Interval;
+                    }
+                }
+                return total;
+            }
+        }
+
         public event Action OnStatsChanged; //스텟 수치 변화시 호출
         public event Action<int> OnGoldChanged; //골드 변화시 호출
 
