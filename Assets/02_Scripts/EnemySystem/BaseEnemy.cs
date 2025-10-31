@@ -16,6 +16,9 @@ public class BaseEnemy : MonoBehaviour, IEnemy
     protected float reward; // 보상
     protected bool isDead;
 
+    [Header("Floating Text")]
+    public GameObject floatingTextPrefab;
+
     public bool IsDead { get { return isDead; } set { isDead = value; } }
     public float CurrentHP { get { return currentHP; }}
     public float Reward { get { return reward; } }
@@ -95,6 +98,17 @@ public class BaseEnemy : MonoBehaviour, IEnemy
         {
             GameManager.Instance.player.AddGold((int)this.Reward);
             Debug.Log($"{gameObject.name} 비활성화, 보상 {Reward} 지급");
+
+            // Floating Text 생성
+            if (floatingTextPrefab != null)
+            {
+                GameObject textObject = Instantiate(floatingTextPrefab, transform.position + Vector3.up, Quaternion.identity);
+                FloatingText3D floatingText = textObject.GetComponent<FloatingText3D>();
+                if (floatingText != null)
+                {
+                    floatingText.SetText($"+{Reward}");
+                }
+            }
         }
         else
         {
