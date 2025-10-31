@@ -1,0 +1,168 @@
+using JHJ;
+using System.Collections;
+using System.Collections.Generic;
+using TeamProject.GameSystem;
+using UnityEngine;
+
+public class BaseEnemy : MonoBehaviour, IEnemy
+{
+    protected GameObject EnemySpawnerObject;
+
+    [Header("현재 능력치 (디버그용)")]
+    [SerializeField] protected float maxHP; // 최대
+    [SerializeField] protected float currentHP; // 현재
+    [SerializeField] protected float moveSpeed; // 이동 속도
+    [SerializeField] protected float damage; // 공격력
+
+    protected float plus; // 증가량
+    protected float reward; // 보상
+    protected bool isDead;
+
+    // 기본 능력치
+    protected float baseMaxHP;
+    protected float baseMoveSpeed;
+    protected float baseDamage;
+
+    [Header("Floating Text")]
+    public GameObject floatingTextPrefab;
+
+    public bool IsDead { get { return isDead; } set { isDead = value; } }
+    public float CurrentHP { get { return currentHP; }}
+    public float Reward { get { return reward; } }
+    public Transform Transform { get { return transform; } }
+    public Collider Collider { get { return GetComponent<Collider>(); } }
+
+    private void Awake()
+    {
+        EnemySpawnerObject = GameObject.Find("EnemySpawner");
+    }
+    private void Update()
+    {
+        MoveToPlayer();
+        // 현재 체력이 0이면 사망처리
+        if (currentHP <= 0 && !isDead)
+        {
+            EnemyDie();
+        }
+    }
+
+    private void OnEnable()
+    {
+        Collider.enabled = false;
+        Collider.enabled = true;
+    }
+
+    // 초기화
+    public virtual void Init()
+    {
+        var spawner = EnemySpawnerObject.GetComponent<EnemySpawner>();
+        baseMaxHP = spawner.MaxHP;
+        baseMoveSpeed = spawner.MoveSpeed;
+        baseDamage = spawner.Damage;
+
+        maxHP = baseMaxHP;
+        currentHP = maxHP;
+        moveSpeed = baseMoveSpeed;
+        damage = baseDamage;
+        reward = spawner.Reward;
+        plus = spawner.Plus;
+    }
+
+
+    // 플레이어로 이동
+    public void MoveToPlayer()
+    {
+        Transform playerTrans = GameObject.Find("Player").transform;
+
+        // 중앙으로 설정 속도 만큼 이동
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            GameObject.Find("Player").transform.position,
+            moveSpeed * Time.deltaTime
+            );
+
+        Vector3 dir = (playerTrans.position - transform.position).normalized;
+
+        transform.rotation = Quaternion.LookRotation(dir);
+    }
+
+    public void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Player")
+        {
+            Debug.Log($"[Collision] {gameObject.name} collided with {other.name}, which has tag 'Player'.");
+
+            Player player = other.GetComponentInParent<Player>();
+            if (player != null)
+            {
+                Debug.Log($"Player component found on {player.gameObject.name}. Applying {damage} damage.");
+                player.TakeDamage(damage);
+
+                Debug.Log("Damaged player. Now calling EnemyDie(false).");
+                EnemyDie(false); // 보상 없이 죽음
+            }
+            else
+            {
+                Debug.LogError($"[Collision Error] Collided with an object tagged 'Player', but could not find the 'Player' component in its parents. Make sure the Player script is on the parent object of the collider.");
+            }
+        }
+        if (other.tag == "Projectile")
+        {
+            Debug.Log($"HP : {currentHP}/{maxHP}");
+        }
+    }
+
+    public virtual void EnemyDie(bool giveReward = true)
+    {
+        if (isDead) return;
+        IsDead = true;
+
+        if (giveReward)
+        {
+            GameManager.Instance.player.AddGold((int)this.Reward);
+            Debug.Log($"{gameObject.name} 비활성화, 보상 {Reward} 지급");
+
+            // Floating Text 생성
+            if (floatingTextPrefab != null)
+            {
+                GameObject textObject = Instantiate(floatingTextPrefab, transform.position + Vector3.up, Quaternion.identity);
+                FloatingText3D floatingText = textObject.GetComponent<FloatingText3D>();
+                if (floatingText != null)
+                {
+                    floatingText.SetText($"+{Reward}");
+                }
+            }
+        }
+        else
+        {
+            Debug.Log($"{gameObject.name} 비활성화, 보상 없음");
+        }
+        
+        gameObject.SetActive(false);
+    }
+
+    // 적 체력 감소
+    public void TakeDamage(int damage)
+    {
+        currentHP -= damage;
+    }
+
+    public void SetWaveLevel(int level)
+    {
+        // 기본 능력치를 기준으로 레벨에 따른 최종 능력치 계산
+        maxHP = baseMaxHP + plus * level;
+        damage = baseDamage + plus * level;
+
+        // baseMoveSpeed가 1보다 작을 경우를 대비한 임시 처리 (기본값을 1로 간주)
+        float effectiveBaseSpeed = baseMoveSpeed < 1f ? 1f : baseMoveSpeed;
+
+        // 이동 속도 계산 및 최대 속도(기본 속도의 2배) 제한
+        float calculatedSpeed = effectiveBaseSpeed + plus * level;
+        moveSpeed = Mathf.Min(calculatedSpeed, effectiveBaseSpeed * 2);
+
+
+        // 체력도 새로운 최대치에 맞게 설정
+        currentHP = maxHP;
+    }
+
+}

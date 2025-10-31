@@ -1,23 +1,18 @@
-// ===============================
-// GameManager.cs (ÆÀ °ø¿ë ½ºÅ©¸³Æ®)
-// ÀÛ¼ºÀÚ: ÀÓ»óÈ£ (°ÔÀÓ ¸Å´ÏÀú)
-// ¿ªÇÒ: °ÔÀÓÀÇ ÀüÃ¼ Èå¸§(Ready ¡æ Playing ¡æ Pause ¡æ GameOver)À» °ü¸®
-// »ç¿ë ´ë»ó: Àü ÆÀ¿ø (UI, Player, Enemy, Spawner µî)
-// ===============================
-
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using JHJ;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using DG.Tweening; // DOTween ì‚¬ìš©ì„ ìœ„í•´ ì¶”ê°€
 
 namespace TeamProject.GameSystem
 {
-    [DefaultExecutionOrder(-100)] // ´Ù¸¥ ½ºÅ©¸³Æ®º¸´Ù ¸ÕÀú ½ÇÇàµÇ°Ô
     public class GameManager : MonoBehaviour
     {
-        // --------------- [1] ½Ì±ÛÅæ ±âº» ±¸Á¶ ---------------
-        // ¸ğµç ½ºÅ©¸³Æ®¿¡¼­ GameManager.Instance ·Î Á¢±Ù °¡´ÉÇÏ°Ô ¸¸µê
         public static GameManager Instance { get; private set; }
+
+        public event Action OnWaveChanged;
 
         private void Awake()
         {
@@ -29,164 +24,157 @@ namespace TeamProject.GameSystem
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            Boot(); // ÃÊ±â ½ÇÇà (°ÔÀÓ ½ÃÀÛ ½Ã ÇÑ ¹ø¸¸)
+            // ì”¬ ë¡œë“œ ì´ë²¤íŠ¸ êµ¬ë…
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
-        // --------------- [2] °ÔÀÓ »óÅÂ Á¤ÀÇ ---------------
-        // ÆÀ¿øµéÀº ÀÌ°É Âü°íÇØ¼­ ¡°ÇöÀç »óÅÂ°¡ ¹¹³Ä?¡± ÆÇ´ÜÇÏ¸é µÊ
-        public enum GameState { Boot, Ready, Playing, Paused, GameOver }
-        public GameState State { get; private set; } = GameState.Boot;
-
-        // ÆÀ¿ø¿ë ÀÌº¥Æ®
-        // ±¸µ¶(+=) ÇØ¼­ UI, »ç¿îµå, Àû ½ºÆ÷³Ê µîÀÌ ¹İÀÀÇÏµµ·Ï ±¸¼º
-        public event Action<GameState> OnStateChanged;
-        public event Action<int> OnScoreChanged;
-        public event Action<int> OnLifeChanged;
-
-        // --------------- [3] ÀÎ½ºÆåÅÍ¿¡¼­ Á¶Á¤ÇÒ °ª ---------------
-        [Header("°ÔÀÓ ±âº» ¼³Á¤")]
-        [Tooltip("°ÔÀÓ ½ÃÀÛ Àü Ä«¿îÆ®´Ù¿î ½Ã°£(ÃÊ)")]
-        [SerializeField] private int startCountdown = 3;
-        [Tooltip("½ÃÀÛ Ã¼·Â(¶Ç´Â ¸ñ¼û ¼ö)")]
-        [SerializeField] private int startLife = 3;
-        [Tooltip("¸ŞÀÎ ¾À ÀÌ¸§ - ºñ¿öµÎ¸é ÇöÀç ¾À ±×´ë·Î »ç¿ë")]
-        [SerializeField] private string mainGameSceneName = "";
-
-        // --------------- [4] ·±Å¸ÀÓ °ª (½ÇÁ¦ °ÔÀÓ Áß ¹Ù²î´Â µ¥ÀÌÅÍ) ---------------
-        public int Score { get; private set; }
-        public int Life { get; private set; }
-
-        private Coroutine countdownRoutine;
-
-        // --------------- [5] ÃÊ±âÈ­ ¹× »óÅÂ ÀüÈ¯ ·ÎÁ÷ ---------------
-        private void Boot()
+        private void OnDestroy()
         {
-            // ¾À ·Îµå ÇÊ¿ä ½Ã (¿¹: Å¸ÀÌÆ² ¡æ Game ¾À)
-            if (!string.IsNullOrEmpty(mainGameSceneName) &&
-                SceneManager.GetActiveScene().name != mainGameSceneName)
-            {
-                SceneManager.sceneLoaded += OnSceneLoadedThenReady;
-                SceneManager.LoadScene(mainGameSceneName);
+            // ì”¬ ë¡œë“œ ì´ë²¤íŠ¸ êµ¬ë… í•´ì§€
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        public EnemySpawner enemySpawner;
+
+        public int currentWave = 0;
+        public float waveDuration = 30f;
+        public float waveRemain = 30f;
+
+        public float nowInterest = 0.0f;
+        public int playerGold = 0;
+        private bool isWaving;
+        private bool isBossSpawned = false;
+        public Player player;
+        private IEnemy _currentBoss;
+
+        void Start()
+        {
+            // ì”¬ì´ ì²˜ìŒ ë¡œë“œë  ë•Œë„ ì¹´ë©”ë¼ íš¨ê³¼ë¥¼ ì ìš©í•˜ê¸° ìœ„í•´ í˜¸ì¶œ
+            OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
+            GameStart();
+        }
+        
+        // 1. ê²Œì„ ì‹œì‘ 
+        public void GameStart()
+        {
+            isWaving = false;
+            NextWave();
+        }
+
+        // 2. ê²Œì„ ì›¨ì´ë¸Œ ì§„í–‰
+        public void Update()
+        {
+
+            if (!IsPlaying) return; // Pause/GameOverë©´ ì•„ë˜ ë¡œì§ ì „ë¶€ ì°¨ë‹¨
+
+            if (IsGameOver)
                 return;
-            }
-
-            ToReady(); // °°Àº ¾ÀÀÌ¶ó¸é ¹Ù·Î Ready »óÅÂ·Î ÁøÀÔ
-        }
-
-        private void OnSceneLoadedThenReady(Scene _, LoadSceneMode __)
-        {
-            SceneManager.sceneLoaded -= OnSceneLoadedThenReady;
-            ToReady();
-        }
-
-        private void ToReady()
-        {
-            State = GameState.Ready;
-            Score = 0;
-            Life = startLife;
-            OnScoreChanged?.Invoke(Score);
-            OnLifeChanged?.Invoke(Life);
-            OnStateChanged?.Invoke(State);
-
-            // UI : ¡°READY¡± ÅØ½ºÆ® ¶ç¿ì°í Ä«¿îÆ®´Ù¿î Ç¥½Ã °¡´É
-            if (startCountdown > 0)
+            if (isWaving)
             {
-                if (countdownRoutine != null) StopCoroutine(countdownRoutine);
-                countdownRoutine = StartCoroutine(StartCountdown(startCountdown));
+                TickTime();
+                if(waveRemain < 0.0f)
+                {
+                    if(!isBossSpawned)
+                    {
+                        UI.UIManager.Instance.ShowEventText("Boss Encounter", 2f);
+                        enemySpawner.SpawnBoss();
+                        isBossSpawned = true;
+                        isWaving = false;
+                    }
+                }
             }
-            else
+        }
+
+        public void TickTime()
+        {
+            waveRemain -= Time.deltaTime;
+            OnWaveChanged?.Invoke();
+        }
+
+        // 3. ì›¨ì´ë¸Œ ì§„í–‰ì— ë”°ë¥¸ ì²˜ë¦¬
+        public void NextWave() // ìŠ¤íƒ€íŠ¸ì—ì„œ ì´ê±¸ë¡œ í˜¸ì¶œë˜ê²Œ
+        {
+            currentWave++;
+            waveRemain = 30f;
+            isWaving = true;
+            if (enemySpawner != null)
             {
-                StartGame();
+                enemySpawner.SetWaveLevel(currentWave);
+                enemySpawner.StartSpawn(currentWave);            //í˜œì£¼ë‹˜ ì‘ì—… ì™„ë£Œ ë˜ë©´ í™•ì¸.
             }
+            OnWaveChanged?.Invoke();
+            InterestPayment();
         }
 
-        private IEnumerator StartCountdown(int seconds)
+        // 4. ì´ì ì§€ê¸‰
+        public void InterestPayment()
         {
-            // UI : ¿©±â¼­ ³²Àº ½Ã°£ Ç¥½Ã °¡´É
-            for (int t = seconds; t > 0; t--)
+            if (player == null)
+                return;
+
+            int currentMoney = player.Gold;
+            int interest = (int)(currentMoney * nowInterest);
+            player.AddGold(interest);
+        }
+
+        // 5. ì´ììœ¨ ì—…ê·¸ë ˆì´ë“œ
+        public void UpgradeInterest()
+        {
+            nowInterest += 0.1f;
+        }
+
+        // 6. ì  ì²˜ì¹˜ ì‹œ ë¦¬ì›Œë“œ ì§€ê¸‰
+        public void EnemyKill(IEnemy enemy)
+        {
+            if (enemy == null || player == null)
+                return;
+
+            int reward = (int)enemy.Reward;  // íŒ€ ê¸°ì¤€ì´ intë¼ë©´ ë‹¨ìˆœ ìºìŠ¤íŒ…ìœ¼ë¡œ ì¶©ë¶„
+            player.AddGold(reward);
+        }
+
+        public void BossEliminated()
+        {
+            UI.UIManager.Instance.ShowEventText("Wave Clear!", 2f);
+
+            if (_currentBoss != null)
             {
-                Debug.Log($"°ÔÀÓ ½ÃÀÛ±îÁö {t}ÃÊ");
-                yield return new WaitForSeconds(1f);
+                _currentBoss = null;
             }
-            StartGame();
+            isBossSpawned = false;
+            NextWave();
         }
 
-        // --------------- [6] »óÅÂ ÀüÈ¯¿ë ÇÔ¼öµé ---------------
-        public void StartGame()
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (State == GameState.Playing) return;
-            State = GameState.Playing;
-            OnStateChanged?.Invoke(State);
-            Time.timeScale = 1f;
-
-            // Player : ÀÌÁ¦ ¿òÁ÷ÀÓ/°ø°İ ½ÃÀÛ °¡´É
-            // Enemy/Spawner : Àû »ı¼º ·çÆ¾ ½ÃÀÛ
+            // "02_InGame" ì”¬ì—ì„œë§Œ ì¹´ë©”ë¼ ì¤Œ ì•„ì›ƒ íš¨ê³¼ ì‹¤í–‰
+            if (scene.name == "02_InGame")
+            {
+                Camera mainCamera = Camera.main;
+                if (mainCamera != null)
+                {
+                    // FOVë¥¼ ì¦‰ì‹œ 0ìœ¼ë¡œ ì„¤ì • (ì´ì „ ì”¬ì—ì„œ ë„˜ì–´ì˜¨ ê°’)
+                    mainCamera.fieldOfView = 0;
+                    
+                    // FOVë¥¼ 85ë¡œ 1.5ì´ˆì— ê±¸ì³ ì• ë‹ˆë©”ì´ì…˜
+                    mainCamera.DOFieldOfView(85f, 1.5f).SetEase(Ease.OutSine);
+                }
+            }
         }
 
-        public void PauseGame()
-        {
-            if (State != GameState.Playing) return;
-            State = GameState.Paused;
-            OnStateChanged?.Invoke(State);
-            Time.timeScale = 0f;
-        }
-
-        public void ResumeGame()
-        {
-            if (State != GameState.Paused) return;
-            State = GameState.Playing;
-            OnStateChanged?.Invoke(State);
-            Time.timeScale = 1f;
-        }
+        public bool IsGameOver { get; private set; }
+        public bool IsPaused { get; private set; }
+        public bool IsPlaying => !IsGameOver && !IsPaused;
 
         public void GameOver()
         {
-            if (State == GameState.GameOver) return;
-            State = GameState.GameOver;
-            OnStateChanged?.Invoke(State);
-            Time.timeScale = 1f;
+            if (IsGameOver) return; // ì´ë¯¸ ê²Œì„ ì˜¤ë²„ ìƒíƒœë©´ ì¤‘ë³µ í˜¸ì¶œ ë°©ì§€
 
-            // UI : ¡°GAME OVER¡± ÆĞ³Î ¶ç¿ì±â
-            // Player : Á¶ÀÛ ¸ØÃß±â
-            // Enemy : Àû ½ºÆù ¸ØÃß±â
+            IsGameOver = true;
+            Debug.Log("Game Over! Player has died.");
+
+            UI.UIManager.Instance.ShowEventText("GAME OVER", 4f, 1f, 1f); // 4ì´ˆ ë™ì•ˆ í‘œì‹œ, 1ì´ˆ í˜ì´ë“œì¸, 1ì´ˆ í˜ì´ë“œì•„ì›ƒ
+
         }
-
-        public void Restart()
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-            // ¾ÀÀÌ ¸®·ÎµåµÇ¸é Boot() ¡æ Ready·Î ´Ù½Ã ÁøÀÔ
-        }
-
-        // --------------- [7] ÆÀ¿øµéÀÌ Á÷Á¢ ºÎ¸¦ ¼ö ÀÖ´Â °ø°³ ÇÔ¼ö ---------------
-        public void AddScore(int amount)
-        {
-            Score += amount;
-            OnScoreChanged?.Invoke(Score);
-        }
-
-        public void DamagePlayer(int damage = 1)
-        {
-            if (State != GameState.Playing) return;
-            Life = Mathf.Max(0, Life - damage);
-            OnLifeChanged?.Invoke(Life);
-            if (Life <= 0) GameOver();
-        }
-
-        public bool IsPlaying() => State == GameState.Playing;
-
-#if UNITY_EDITOR
-        // Å×½ºÆ®¿ë ´ÜÃàÅ° (ºôµå ½Ã Á¦°ÅµÊ)
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.F1)) StartGame();
-            if (Input.GetKeyDown(KeyCode.F2)) GameOver();
-            if (Input.GetKeyDown(KeyCode.F5)) Restart();
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                if (State == GameState.Playing) PauseGame();
-                else if (State == GameState.Paused) ResumeGame();
-            }
-        }
-#endif
     }
 }
