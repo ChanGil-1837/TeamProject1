@@ -32,6 +32,7 @@ public class BaseEnemy : MonoBehaviour, IEnemy
         // 현재 체력이 0이면 사망처리
         if (currentHP <= 0)
         {
+            GameManager.Instance.player.AddGold((int)this.Reward);
             EnemyDie();
         }
     }
@@ -86,7 +87,7 @@ public class BaseEnemy : MonoBehaviour, IEnemy
         }
     }
 
-    public void EnemyDie()
+    public virtual void EnemyDie()
     {
         gameObject.SetActive(false);
         IsDead = true;

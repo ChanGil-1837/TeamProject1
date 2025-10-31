@@ -22,7 +22,6 @@ namespace TeamProject.GameSystem
             }
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            GameStart();
         }
 
         public EnemySpawner enemySpawner;
@@ -36,6 +35,7 @@ namespace TeamProject.GameSystem
         private bool isWaving;
         private bool isBossSpawned = false;
         public Player player;
+        private IEnemy _currentBoss;
 
         // [추가] 보스 관련 필드
         //[Header("Boss Settings")]
@@ -45,6 +45,10 @@ namespace TeamProject.GameSystem
         //private bool _bossPhase;               // 보스 페이즈 진행 중?
         //public bool IsBossPhase => _bossPhase; // UI가 읽어 쓸 수 있게
 
+        void Start()
+        {
+            GameStart();
+        }
         // 1. 게임 시작 
         public void GameStart()
         {
@@ -67,7 +71,7 @@ namespace TeamProject.GameSystem
                 {
                     if(!isBossSpawned)
                     {
-                        //enemySpawner.SpawnBoss();
+                        enemySpawner.SpawnBoss();
                         isBossSpawned = true;
                         isWaving = false;
                     }
@@ -92,7 +96,7 @@ namespace TeamProject.GameSystem
             if (enemySpawner != null)
             {
                 enemySpawner.SetWaveLevel(currentWave);
-                //enemySpawner.StartSpawn();            //혜주님 작업 완료 되면 확인.
+                enemySpawner.StartSpawn(currentWave);            //혜주님 작업 완료 되면 확인.
             }
             OnWaveChanged?.Invoke();
             InterestPayment();
@@ -125,9 +129,14 @@ namespace TeamProject.GameSystem
             player.AddGold(reward);
         }
 
-        public void BossEliminated()
+        public void BossEliminated(IEnemy boss)
         {
-            
+            if (_currentBoss != null)
+            {
+                _currentBoss = null;
+            }
+            isBossSpawned = false;
+            NextWave();
         }
 
         public bool IsGameOver { get; private set; }

@@ -1083,9 +1083,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemySpawner: {fileID: 1413886749}
-  currentWave: 1
-  waveDuration: 30
-  waveRemain: 30
+  currentWave: 0
+  waveDuration: 5
+  waveRemain: 5
   nowInterest: 0
   playerGold: 0
   player: {fileID: 1635191797}
@@ -1267,7 +1267,8 @@ MonoBehaviour:
   _baseDef: 0
   _detectRange: 3
   _gold: 0
-  _detectCollider: {fileID: 262671251}
+  _currentHp: 0
+  _displayTotalDPS: 0
   _weapons:
   - {fileID: 1675121011}
   - {fileID: 1459829651}

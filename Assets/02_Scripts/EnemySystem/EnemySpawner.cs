@@ -79,11 +79,11 @@ public class EnemySpawner : MonoBehaviour
         Debug.Log($"입력 이속{MoveSpeed}");
     }
 
-    private void Start()
-    {
-        SetWaveEnemy(1);
-        StartSpawn(1);
-    }
+    // private void Start()
+    // {
+    //     SetWaveEnemy(1);
+    //     StartSpawn(1);
+    // }
 
     private void Update()
     {
@@ -140,6 +140,29 @@ public class EnemySpawner : MonoBehaviour
         activeCoroutine = StartCoroutine(SpawnEnemy(wave));
     }
 
+    public void SpawnBoss()
+    {
+        if (bossEnemies.Count > 0)
+        {
+            GameObject boss = bossEnemies[0];
+            if (boss != null && !boss.activeSelf)
+            {
+                // Find a valid spawn position
+                Vector3 spawnPosition;
+                do
+                {
+                    spawnPosition = GameObject.Find("Player").transform.position + (Random.insideUnitSphere * _attackRange);
+                    spawnPosition.y = 0;
+                } while (spawnPosition.magnitude < _attackRange - 1);
+
+                boss.GetComponent<BaseEnemy>().Init();
+                boss.GetComponent<BaseEnemy>().IsDead = false;
+                boss.transform.position = spawnPosition;
+                boss.SetActive(true);
+            }
+        }
+    }
+
         IEnumerator SpawnEnemy(int wave)
         {
             float delayTime = _spawnerInterval;
@@ -189,7 +212,6 @@ public class EnemySpawner : MonoBehaviour
                     }
 
                 }
-                Debug.Log($"{delayTime++}초 대기");
             }
 
         }
@@ -199,6 +221,7 @@ public class EnemySpawner : MonoBehaviour
     // 웨이브 레벨에 따른 적 능력치 처리
     public void SetWaveLevel(int wave)
     {
+        SetWaveEnemy(wave);
         //리스트에 존재하는 오브젝트의 수치를 변경
         foreach (var enemy in normalEnemies)
         {
@@ -291,10 +314,12 @@ public class EnemySpawner : MonoBehaviour
     private void ShuffleList()
     {
         // 적 리스트 병함
+        activeEnemies.Clear();
+        suffleActiveEnemies.Clear();
         activeEnemies.AddRange(normalEnemies);
         activeEnemies.AddRange(tankEnemies);
         activeEnemies.AddRange(speedEnemies);
-        activeEnemies.AddRange(bossEnemies);
+        //activeEnemies.AddRange(bossEnemies); // 보스는 SpawnBoss로 따로 소환
 
         System.Random random = new System.Random();
         // 리스트 전체 길이 저장

@@ -10,6 +10,7 @@ using TeamProject.GameSystem;
 public class BossEnemy : BaseEnemy
 {
     //BossEnemy
+    public event Action OnBossDied;
 
     public override void Init()
     {
@@ -20,5 +21,11 @@ public class BossEnemy : BaseEnemy
         reward = 2 * EnemySpawnerObject.GetComponent<EnemySpawner>().Reward;
         plus = EnemySpawnerObject.GetComponent<EnemySpawner>().Plus;
     }
-   
+
+    public override void EnemyDie()
+    {
+        OnBossDied?.Invoke();
+        Debug.LogError("보스 죽임");
+        base.EnemyDie();
+    }
 }
