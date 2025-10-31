@@ -71,6 +71,7 @@ namespace TeamProject.GameSystem
                 {
                     if(!isBossSpawned)
                     {
+                        UI.UIManager.Instance.ShowEventText("Boss Encounter", 2f);
                         enemySpawner.SpawnBoss();
                         isBossSpawned = true;
                         isWaving = false;
@@ -129,8 +130,10 @@ namespace TeamProject.GameSystem
             player.AddGold(reward);
         }
 
-        public void BossEliminated(IEnemy boss)
+        public void BossEliminated()
         {
+            UI.UIManager.Instance.ShowEventText("Wave Clear!", 2f);
+
             if (_currentBoss != null)
             {
                 _currentBoss = null;

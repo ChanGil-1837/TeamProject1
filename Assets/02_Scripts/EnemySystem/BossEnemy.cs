@@ -31,7 +31,8 @@ public class BossEnemy : BaseEnemy
             // 자기 자신을 제외하고 모든 적을 죽임
             EnemySpawnerObject.GetComponent<EnemySpawner>().KillAll(this);
         }
-
+        GameManager.Instance.BossEliminated();
         base.EnemyDie(giveReward);
+        
     }
 }
