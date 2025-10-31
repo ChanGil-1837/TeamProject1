@@ -40,7 +40,7 @@ public abstract class Weapon : MonoBehaviour
     public int DamageLevel => damageLevel;
     public int IntervalLevel => intervalLevel;
 
-    // Level
+
     private int damageLevel;
     private int intervalLevel;
 
@@ -130,20 +130,18 @@ public abstract class Weapon : MonoBehaviour
     #region Attack
 
 
-    // �߻�
     public abstract void Fire(IEnemy enemy);
 
 
-    // ���� üũ
     protected bool CheckCondition(IEnemy enemy)
     {
+        if (isAvailable == false) return false;
         if (enemy == null) return false;
         if (canFire == false) return false;
 
         return true;
     }
 
-    // ���� ���
     protected Vector3 GetDirection(IEnemy enemy)
     {
         Vector3 baseDirection = enemy.Transform.position - transform.position;
@@ -157,7 +155,6 @@ public abstract class Weapon : MonoBehaviour
         return direction;
     }
 
-    // �߻� �� ����
     protected void AfterFire()
     {
         canFire = false;
@@ -204,7 +201,6 @@ public abstract class Weapon : MonoBehaviour
     }
 
 
-    // Set Projectile Active Transform 
     private void SetProjectileTransform(Projectile projectile, Vector3 direction)
     {
         projectile.transform.position = transform.position;
