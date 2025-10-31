@@ -95,6 +95,38 @@ public class EnemySpawner : MonoBehaviour
         //ClearEnemies();
     }
 
+    public void KillAll(BaseEnemy ignoreEnemy = null)
+    {
+        // Stop spawning new enemies
+        if (activeCoroutine != null)
+        {
+            StopCoroutine(activeCoroutine);
+            Debug.Log("적 생성이 중지되었습니다.");
+        }
+
+        // Combine all enemy lists
+        List<GameObject> allEnemies = new List<GameObject>();
+        allEnemies.AddRange(normalEnemies);
+        allEnemies.AddRange(tankEnemies);
+        allEnemies.AddRange(speedEnemies);
+        allEnemies.AddRange(bossEnemies);
+
+        // Kill all active enemies
+        foreach (var enemy in allEnemies)
+        {
+            if (enemy != null && enemy.activeSelf)
+            {
+                BaseEnemy enemyComponent = enemy.GetComponent<BaseEnemy>();
+                if (enemyComponent == ignoreEnemy)
+                {
+                    continue;
+                }
+                enemyComponent.EnemyDie();
+            }
+        }
+        Debug.Log("모든 활성화된 적을 제거했습니다.");
+    }
+
     // 웨이브 enemy 설정
     public void SetWaveEnemy(int wave)
     {

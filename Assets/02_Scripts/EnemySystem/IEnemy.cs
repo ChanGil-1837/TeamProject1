@@ -13,7 +13,7 @@ public interface IEnemy
     void MoveToPlayer();
 
     // 적 체력이 0 이하일 때, 오브젝트 파괴됨
-    void EnemyDie();
+    void EnemyDie(bool reward);
 
     // 적 체력 감소
     void TakeDamage(int damage);

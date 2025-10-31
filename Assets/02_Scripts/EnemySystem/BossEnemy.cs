@@ -22,10 +22,16 @@ public class BossEnemy : BaseEnemy
         plus = EnemySpawnerObject.GetComponent<EnemySpawner>().Plus;
     }
 
-    public override void EnemyDie()
+    public override void EnemyDie(bool giveReward = true)
     {
         OnBossDied?.Invoke();
-        Debug.LogError("보스 죽임");
-        base.EnemyDie();
+
+        if (EnemySpawnerObject != null)
+        {
+            // 자기 자신을 제외하고 모든 적을 죽임
+            EnemySpawnerObject.GetComponent<EnemySpawner>().KillAll(this);
+        }
+
+        base.EnemyDie(giveReward);
     }
 }

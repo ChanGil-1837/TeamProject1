@@ -30,9 +30,8 @@ public class BaseEnemy : MonoBehaviour, IEnemy
     {
         MoveToPlayer();
         // 현재 체력이 0이면 사망처리
-        if (currentHP <= 0)
+        if (currentHP <= 0 && !isDead)
         {
-            GameManager.Instance.player.AddGold((int)this.Reward);
             EnemyDie();
         }
     }
@@ -79,7 +78,7 @@ public class BaseEnemy : MonoBehaviour, IEnemy
             Debug.Log($"HP : {currentHP}/{maxHP}");
             Debug.Log($"{gameObject.name} 접촉함.");
             other.GetComponentInParent<Player>().TakeDamage(damage);
-            EnemyDie();
+            EnemyDie(false); // 보상 없이 죽음
         }
         if (other.tag == "Projectile")
         {
@@ -87,12 +86,22 @@ public class BaseEnemy : MonoBehaviour, IEnemy
         }
     }
 
-    public virtual void EnemyDie()
+    public virtual void EnemyDie(bool giveReward = true)
     {
-        gameObject.SetActive(false);
+        if (isDead) return;
         IsDead = true;
+
+        if (giveReward)
+        {
+            GameManager.Instance.player.AddGold((int)this.Reward);
+            Debug.Log($"{gameObject.name} 비활성화, 보상 {Reward} 지급");
+        }
+        else
+        {
+            Debug.Log($"{gameObject.name} 비활성화, 보상 없음");
+        }
         
-        Debug.Log($"{gameObject.name} 비활성화");
+        gameObject.SetActive(false);
     }
 
     // 적 체력 감소
@@ -108,4 +117,5 @@ public class BaseEnemy : MonoBehaviour, IEnemy
         damage = damage + plus * level;
         moveSpeed = moveSpeed + plus * level;
     }
+
 }
