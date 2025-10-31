@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using JHJ;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using DG.Tweening; // DOTween 사용을 위해 추가
 
 namespace TeamProject.GameSystem
 {
@@ -22,6 +23,15 @@ namespace TeamProject.GameSystem
             }
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // 씬 로드 이벤트 구독
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnDestroy()
+        {
+            // 씬 로드 이벤트 구독 해지
+            SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
         public EnemySpawner enemySpawner;
@@ -37,18 +47,13 @@ namespace TeamProject.GameSystem
         public Player player;
         private IEnemy _currentBoss;
 
-        // [추가] 보스 관련 필드
-        //[Header("Boss Settings")]
-        //public GameObject[] bossPrefabs;       // 웨이브별 보스 프리팹(없으면 마지막걸로 고정)
-        //public Transform bossSpawnPoint;       // 보스 스폰 위치(없으면 (0,0,0))
-        //private GameObject _currentBoss;       // 현 보스 인스턴스
-        //private bool _bossPhase;               // 보스 페이즈 진행 중?
-        //public bool IsBossPhase => _bossPhase; // UI가 읽어 쓸 수 있게
-
         void Start()
         {
+            // 씬이 처음 로드될 때도 카메라 효과를 적용하기 위해 호출
+            OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
             GameStart();
         }
+        
         // 1. 게임 시작 
         public void GameStart()
         {
@@ -78,8 +83,6 @@ namespace TeamProject.GameSystem
                     }
                 }
             }
-        
-
         }
 
         public void TickTime()
@@ -142,6 +145,23 @@ namespace TeamProject.GameSystem
             NextWave();
         }
 
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            // "02_InGame" 씬에서만 카메라 줌 아웃 효과 실행
+            if (scene.name == "02_InGame")
+            {
+                Camera mainCamera = Camera.main;
+                if (mainCamera != null)
+                {
+                    // FOV를 즉시 0으로 설정 (이전 씬에서 넘어온 값)
+                    mainCamera.fieldOfView = 0;
+                    
+                    // FOV를 85로 1.5초에 걸쳐 애니메이션
+                    mainCamera.DOFieldOfView(85f, 1.5f).SetEase(Ease.OutSine);
+                }
+            }
+        }
+
         public bool IsGameOver { get; private set; }
         public bool IsPaused { get; private set; }
         public bool IsPlaying => !IsGameOver && !IsPaused;
@@ -150,6 +170,5 @@ namespace TeamProject.GameSystem
         {
             IsGameOver = true;
         }
-
     }
 }
