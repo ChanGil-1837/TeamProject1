@@ -90,10 +90,21 @@ public class BaseEnemy : MonoBehaviour, IEnemy
     {
         if (other.tag == "Player")
         {
-            Debug.Log($"HP : {currentHP}/{maxHP}");
-            Debug.Log($"{gameObject.name} 접촉함.");
-            other.GetComponentInParent<Player>().TakeDamage(damage);
-            EnemyDie(false); // 보상 없이 죽음
+            Debug.Log($"[Collision] {gameObject.name} collided with {other.name}, which has tag 'Player'.");
+
+            Player player = other.GetComponentInParent<Player>();
+            if (player != null)
+            {
+                Debug.Log($"Player component found on {player.gameObject.name}. Applying {damage} damage.");
+                player.TakeDamage(damage);
+
+                Debug.Log("Damaged player. Now calling EnemyDie(false).");
+                EnemyDie(false); // 보상 없이 죽음
+            }
+            else
+            {
+                Debug.LogError($"[Collision Error] Collided with an object tagged 'Player', but could not find the 'Player' component in its parents. Make sure the Player script is on the parent object of the collider.");
+            }
         }
         if (other.tag == "Projectile")
         {

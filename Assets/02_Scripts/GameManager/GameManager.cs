@@ -168,7 +168,13 @@ namespace TeamProject.GameSystem
 
         public void GameOver()
         {
+            if (IsGameOver) return; // 이미 게임 오버 상태면 중복 호출 방지
+
             IsGameOver = true;
+            Debug.Log("Game Over! Player has died.");
+
+            UI.UIManager.Instance.ShowEventText("GAME OVER", 4f, 1f, 1f); // 4초 동안 표시, 1초 페이드인, 1초 페이드아웃
+
         }
     }
 }
