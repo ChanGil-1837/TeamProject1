@@ -47,6 +47,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ce5007a422153a4cb4449cc9d06d04c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHP: 0
+  currentHP: 0
+  moveSpeed: 1
+  damage: 0
   floatingTextPrefab: {fileID: 382937319683167282, guid: 55dce74f1564f407ea4a4fe369d06df1, type: 3}
 --- !u!65 &8735861363069537832
 BoxCollider:

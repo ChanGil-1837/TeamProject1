@@ -23,7 +23,7 @@ public class EnemySpawner : MonoBehaviour
                                                             // [Header("기본 최대 체력")]
     [Header("적 기본정보")]
     [SerializeField] private float _maxHP; // 최대
-    [SerializeField] private float _moveSpeed; // 이동 속도
+    [SerializeField] private float _moveSpeed = 0.5f; // 이동 속도
     [SerializeField] private float _damage; // 공격력
     [SerializeField] private float _reward; // 보상
 

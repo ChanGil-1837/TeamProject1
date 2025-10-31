@@ -8,10 +8,12 @@ public class BaseEnemy : MonoBehaviour, IEnemy
 {
     protected GameObject EnemySpawnerObject;
 
-    protected float maxHP; // 최대
-    protected float currentHP; // 현재
-    protected float moveSpeed; // 이동 속도
-    protected float damage; // 공격력
+    [Header("현재 능력치 (디버그용)")]
+    [SerializeField] protected float maxHP; // 최대
+    [SerializeField] protected float currentHP; // 현재
+    [SerializeField] protected float moveSpeed; // 이동 속도
+    [SerializeField] protected float damage; // 공격력
+
     protected float plus; // 증가량
     protected float reward; // 보상
     protected bool isDead;
@@ -140,9 +142,13 @@ public class BaseEnemy : MonoBehaviour, IEnemy
         maxHP = baseMaxHP + plus * level;
         damage = baseDamage + plus * level;
 
+        // baseMoveSpeed가 1보다 작을 경우를 대비한 임시 처리 (기본값을 1로 간주)
+        float effectiveBaseSpeed = baseMoveSpeed < 1f ? 1f : baseMoveSpeed;
+
         // 이동 속도 계산 및 최대 속도(기본 속도의 2배) 제한
-        float calculatedSpeed = baseMoveSpeed + plus * level;
-        moveSpeed = Mathf.Min(calculatedSpeed, baseMoveSpeed * 2);
+        float calculatedSpeed = effectiveBaseSpeed + plus * level;
+        moveSpeed = Mathf.Min(calculatedSpeed, effectiveBaseSpeed * 2);
+
 
         // 체력도 새로운 최대치에 맞게 설정
         currentHP = maxHP;
