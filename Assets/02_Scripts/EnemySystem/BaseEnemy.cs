@@ -16,6 +16,11 @@ public class BaseEnemy : MonoBehaviour, IEnemy
     protected float reward; // 보상
     protected bool isDead;
 
+    // 기본 능력치
+    protected float baseMaxHP;
+    protected float baseMoveSpeed;
+    protected float baseDamage;
+
     [Header("Floating Text")]
     public GameObject floatingTextPrefab;
 
@@ -48,12 +53,17 @@ public class BaseEnemy : MonoBehaviour, IEnemy
     // 초기화
     public virtual void Init()
     {
-        maxHP = EnemySpawnerObject.GetComponent<EnemySpawner>().MaxHP;
+        var spawner = EnemySpawnerObject.GetComponent<EnemySpawner>();
+        baseMaxHP = spawner.MaxHP;
+        baseMoveSpeed = spawner.MoveSpeed;
+        baseDamage = spawner.Damage;
+
+        maxHP = baseMaxHP;
         currentHP = maxHP;
-        moveSpeed = EnemySpawnerObject.GetComponent<EnemySpawner>().MoveSpeed;
-        damage = EnemySpawnerObject.GetComponent<EnemySpawner>().Damage;
-        reward = EnemySpawnerObject.GetComponent<EnemySpawner>().Reward;
-        plus = EnemySpawnerObject.GetComponent<EnemySpawner>().Plus;
+        moveSpeed = baseMoveSpeed;
+        damage = baseDamage;
+        reward = spawner.Reward;
+        plus = spawner.Plus;
     }
 
 
@@ -126,10 +136,16 @@ public class BaseEnemy : MonoBehaviour, IEnemy
 
     public void SetWaveLevel(int level)
     {
-        // 레벨의 0.5배 증가
-        maxHP = maxHP + plus * level;
-        damage = damage + plus * level;
-        moveSpeed = moveSpeed + plus * level;
+        // 기본 능력치를 기준으로 레벨에 따른 최종 능력치 계산
+        maxHP = baseMaxHP + plus * level;
+        damage = baseDamage + plus * level;
+
+        // 이동 속도 계산 및 최대 속도(기본 속도의 2배) 제한
+        float calculatedSpeed = baseMoveSpeed + plus * level;
+        moveSpeed = Mathf.Min(calculatedSpeed, baseMoveSpeed * 2);
+
+        // 체력도 새로운 최대치에 맞게 설정
+        currentHP = maxHP;
     }
 
 }

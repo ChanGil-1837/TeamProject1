@@ -226,6 +226,7 @@ public class EnemySpawner : MonoBehaviour
                             if (direction.magnitude >= _attackRange - 1)
                             {
                                 suffleActiveEnemies[enemyTurn].GetComponent<BaseEnemy>().Init();
+                                suffleActiveEnemies[enemyTurn].GetComponent<BaseEnemy>().SetWaveLevel(wave);
                                 suffleActiveEnemies[enemyTurn].GetComponent<BaseEnemy>().IsDead = false;
 
                                 suffleActiveEnemies[enemyTurn].transform.position = direction;
@@ -254,23 +255,6 @@ public class EnemySpawner : MonoBehaviour
     public void SetWaveLevel(int wave)
     {
         SetWaveEnemy(wave);
-        //리스트에 존재하는 오브젝트의 수치를 변경
-        foreach (var enemy in normalEnemies)
-        {
-            enemy.GetComponent<NormalEnemy>().SetWaveLevel(wave);
-        }
-        foreach (var enemy in tankEnemies)
-        {
-            enemy.GetComponent<TankEnemy>().SetWaveLevel(wave);
-        }
-        foreach (var enemy in speedEnemies)
-        {
-            enemy.GetComponent<SpeedEnemy>().SetWaveLevel(wave);
-        }
-        foreach (var enemy in bossEnemies)
-        {
-            enemy.GetComponent<BossEnemy>().SetWaveLevel(wave);
-        }
     }
 
     // 오브젝트 이름 중복을 피하기 위해 부여
