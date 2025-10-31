@@ -2,9 +2,7 @@ using UnityEngine;
 
 public sealed class MultiWeapon : Weapon
 {
-    [Header("����ü ��")]
     [SerializeField] private int shotCount = 3;
-    [Header("����")]
     [SerializeField] private float totalAngle = 45f;
 
     public int ShotLevel => shotLevel;
